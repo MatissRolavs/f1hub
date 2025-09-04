@@ -12,15 +12,14 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('drivers', function (Blueprint $table) {
-        $table->id();
-        $table->string('first_name');
-        $table->string('last_name');
-        $table->string('code', 3)->nullable(); // e.g. VER, HAM
-        $table->date('dob')->nullable();
-        $table->string('nationality')->nullable();
-        $table->foreignId('constructor_id')->constrained()->onDelete('cascade');
-        $table->string('photo_url')->nullable();
-        $table->timestamps();
+            $table->id();
+            $table->string('driver_id')->unique();
+            $table->string('given_name');
+            $table->string('family_name');
+            $table->string('nationality')->nullable();
+            $table->string('permanent_number')->nullable();
+            $table->string('url')->nullable();
+            $table->timestamps();
         });
     }
 
