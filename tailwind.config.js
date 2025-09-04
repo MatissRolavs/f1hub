@@ -18,4 +18,15 @@ export default {
     },
 
     plugins: [forms],
+    // tailwind.config.js
+    
+    theme: {
+        extend: {
+        fontFamily: {
+            mono: ['"IBM Plex Mono"', 'monospace'],
+        },
+        },
+    },
+    
+
 };

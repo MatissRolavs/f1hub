@@ -12,15 +12,18 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('drivers', function (Blueprint $table) {
-            $table->id();
-            $table->string('driver_id')->unique();
-            $table->string('given_name');
-            $table->string('family_name');
-            $table->string('nationality')->nullable();
-            $table->string('permanent_number')->nullable();
-            $table->string('url')->nullable();
-            $table->timestamps();
-        });
+    $table->id(); // Laravel auto-incremented ID
+    $table->string('driver_id')->unique(); // e.g. "piastri"
+    $table->string('code')->nullable();
+    $table->string('permanent_number')->nullable();
+    $table->string('given_name');
+    $table->string('family_name');
+    $table->date('date_of_birth');
+    $table->string('nationality');
+    $table->string('url')->nullable();
+    $table->timestamps();
+});
+
     }
 
     /**

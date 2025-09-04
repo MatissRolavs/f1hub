@@ -24,7 +24,8 @@ Route::middleware('auth')->group(function () {
     Route::get('/f1/standings/{year?}', [F1Controller::class, 'driverStandings']);
     Route::get('/f1/drivers', [F1Controller::class, 'allDrivers']);
     Route::get('/drivers', [F1Controller::class, 'index'])->name('drivers.index');
-    
+    Route::get('/drivers1', [F1Controller::class, 'syncStandings'])->name('drivers1.index');
+    Route::get('/drivers1', [F1Controller::class, 'index'])->name('drivers1.index');
 });
 
 require __DIR__.'/auth.php';
