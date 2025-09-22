@@ -12,12 +12,7 @@ use Illuminate\Support\Facades\Auth;
 
 class DriverController extends Controller
 {
-    protected $f1;
-
-    public function __construct(JolpicaF1Service $f1)
-    {
-        $this->f1 = $f1;
-    }
+    
     public function syncStandings($year = 2025)
     {
         if (Auth::user()->role !== 'admin') {

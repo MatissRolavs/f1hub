@@ -15,12 +15,7 @@ use Carbon\Carbon;
 
 class RaceController extends Controller
 {
-    protected $f1;
-
-    public function __construct(JolpicaF1Service $f1)
-    {
-        $this->f1 = $f1;
-    }
+    
 
     public function currentSeasonRaces()
     {   
