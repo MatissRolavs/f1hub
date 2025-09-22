@@ -2,8 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Race;
-use App\Models\Race_result;
 use App\Models\GameScore;
 use App\Models\RacePrediction;
 use Illuminate\Http\Request;

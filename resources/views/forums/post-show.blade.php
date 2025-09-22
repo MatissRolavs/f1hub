@@ -1,19 +1,11 @@
 <x-app-layout>
-<style>
-    /* Ensure long words/URLs wrap in titles and comments */
-    .break-text {
-        word-wrap: break-word;      /* older browsers */
-        overflow-wrap: break-word;  /* modern browsers */
-        white-space: normal;        /* allow wrapping */
-    }
-</style>
-
 <div class="px-4 sm:px-6 lg:px-8 max-w-4xl mx-auto mt-8 text-white audiowide-regular">
-    <h2 class="text-3xl font-bold mb-2 break-text">{{ $post->title }}</h2>
+    <h2 class="text-3xl font-bold mb-2 break-words whitespace-normal">{{ $post->title }}</h2>
     <p class="text-gray-400 mb-4">
         by {{ $post->user->name }} — {{ $post->created_at->format('d M Y H:i') }}
     </p>
-    <div class="bg-gray-800 p-4 rounded mb-4 break-text">
+
+    <div class="bg-gray-800 p-4 rounded mb-4 break-words whitespace-normal">
         {{ $post->body }}
     </div>
 
@@ -49,7 +41,7 @@
             <p class="text-sm text-gray-300 mb-1">
                 {{ $comment->user->name }} — {{ $comment->created_at->diffForHumans() }}
             </p>
-            <p class="break-text">{{ $comment->body }}</p>
+            <p class="break-words whitespace-normal">{{ $comment->body }}</p>
         </div>
     @empty
         <p class="text-gray-400">No comments yet.</p>

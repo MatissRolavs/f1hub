@@ -1,33 +1,4 @@
 <x-app-layout>
-<style>
-.flip-card {
-  perspective: 1000px;
-}
-.flip-card-inner {
-  position: relative;
-  width: 100%;
-  height: 100%;
-  text-align: center;
-  transition: transform 0.8s;
-  transform-style: preserve-3d;
-}
-.flip-card:hover .flip-card-inner {
-  transform: rotateY(180deg);
-}
-.flip-card-front, .flip-card-back {
-  position: absolute;
-  width: 100%;
-  height: 100%;
-  -webkit-backface-visibility: hidden;
-  backface-visibility: hidden;
-}
-.flip-card-back {
-  background-color: transparent;
-  color: white;
-  transform: rotateY(180deg);
-}
-</style>
-
 <div class="max-w-7xl mx-auto px-4 py-6">
     <h2 class="text-2xl font-bold text-center text-white audiowide-regular">CURRENT SEASON F1 DRIVERS</h2>
     <br>
@@ -36,7 +7,6 @@
     @endif
 
     @if($drivers->count())
-
         <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
             @foreach($drivers as $driver)
                 @php
@@ -64,13 +34,12 @@
                 @endphp
 
                 <a href="{{ route('drivers.show', $driver) }}" class="block">
-                    <div class="flip-card rounded-2xl shadow-lg overflow-hidden transition-all duration-300 transform"
-                         style="background-color: {{ $bgColor }}; height: 740px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);"
-                         onmouseover="this.style.boxShadow='0 0 20px {{ $bgColor }}';" 
-                         onmouseout="this.style.boxShadow='0 4px 6px rgba(0,0,0,0.1)';">
-                        <div class="flip-card-inner rounded-2xl">
+                    <div class="group [perspective:1000px] rounded-2xl shadow-lg overflow-hidden transition-all duration-300 transform"
+                         style="background-color: {{ $bgColor }}; height: 740px;">
+                        <div class="relative w-full h-full text-center transition-transform duration-[800ms] [transform-style:preserve-3d] group-hover:[transform:rotateY(180deg)] rounded-2xl">
+                            
                             {{-- Front Side --}}
-                            <div class="flip-card-front rounded-2xl overflow-hidden">
+                            <div class="absolute w-full h-full [backface-visibility:hidden] rounded-2xl overflow-hidden">
                                 <img 
                                     src="https://media.formula1.com/image/upload/f_webp,c_limit,q_50,w_640/content/dam/fom-website/drivers/2025Drivers/{{ $driver->family_name }}" 
                                     alt="{{ $driver->given_name }} {{ $driver->family_name }}"
@@ -88,8 +57,9 @@
                                     <p class="text-sm audiowide-regular"><strong>Team:</strong> {{ $constructorName }}</p>
                                 </div>
                             </div>
+
                             {{-- Back Side --}}
-                            <div class="flip-card-back rounded-2xl flex flex-col justify-center items-center p-6"
+                            <div class="absolute w-full h-full [backface-visibility:hidden] [transform:rotateY(180deg)] flex flex-col justify-center items-center p-6 rounded-2xl"
                                  style="background-color: {{ $bgColor }};">
                                 <h3 class="text-xl font-semibold mb-4 audiowide-regular">Season Stats</h3>
                                 <ul class="space-y-2 text-base text-white audiowide-regular">
@@ -98,6 +68,7 @@
                                     <li><strong>Wins:</strong> {{ $driver->latestStanding->wins ?? '—' }}</li>
                                 </ul>
                             </div>
+
                         </div>
                     </div>
                 </a>

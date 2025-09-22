@@ -1,45 +1,6 @@
 <x-app-layout>
-<style>
-    .race-results-container {
-        background-color: #1a1a1a;
-        border-radius: 12px;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.4);
-        color: #fff;
-        font-family: monospace;
-        padding: 2rem;
-    }
-    table {
-        width: 100%;
-        border-collapse: collapse;
-    }
-    th, td {
-        padding: 0.75rem;
-        text-align: left;
-    }
-    th {
-        background-color: #222;
-        color: rgb(156 163 175);
-        text-transform: uppercase;
-        font-size: 0.9rem;
-    }
-    tr:nth-child(even) {
-        background-color: #2a2a2a;
-    }
-    tr:hover {
-        background-color: #333;
-    }
-    .driver-name {
-        font-weight: bold;
-    }
-    .driver-code {
-        color: #ccc;
-        font-size: 0.85rem;
-    }
-</style>
-
-{{-- Matches navbar padding, limits width, and adds top margin --}}
 <div class="px-4 sm:px-6 lg:px-8 max-w-6xl mx-auto mt-8">
-    <div class="race-results-container">
+    <div class="bg-[#1a1a1a] rounded-xl shadow-lg text-white font-mono p-8">
         <h2 class="text-2xl font-bold mb-2 text-center audiowide-regular">
             🏁 {{ $raceName }} — {{ $season }}
         </h2>
@@ -47,41 +8,64 @@
             Round {{ $round }} — {{ \Carbon\Carbon::parse($raceDate)->format('D, d M Y') }}
         </p>
 
-        <table>
-            <thead>
+        <table class="w-full border-collapse md:table block">
+            <thead class="hidden md:table-header-group">
                 <tr>
-                    <th>Pos</th>
-                    <th>Driver</th>
-                    <th>Nationality</th>
-                    <th>Constructor</th>
-                    <th>Grid</th>
-                    <th>Laps</th>
-                    <th>Time</th>
-                    <th>Points</th>
-                    <th>Fastest Lap</th>
+                    <th class="bg-[#222] text-gray-400 uppercase text-sm p-3 text-left">Pos</th>
+                    <th class="bg-[#222] text-gray-400 uppercase text-sm p-3 text-left">Driver</th>
+                    <th class="bg-[#222] text-gray-400 uppercase text-sm p-3 text-left">Nationality</th>
+                    <th class="bg-[#222] text-gray-400 uppercase text-sm p-3 text-left">Constructor</th>
+                    <th class="bg-[#222] text-gray-400 uppercase text-sm p-3 text-left">Grid</th>
+                    <th class="bg-[#222] text-gray-400 uppercase text-sm p-3 text-left">Laps</th>
+                    <th class="bg-[#222] text-gray-400 uppercase text-sm p-3 text-left">Time</th>
+                    <th class="bg-[#222] text-gray-400 uppercase text-sm p-3 text-left">Points</th>
+                    <th class="bg-[#222] text-gray-400 uppercase text-sm p-3 text-left">Fastest Lap</th>
                 </tr>
             </thead>
-            <tbody>
+            <tbody class="block md:table-row-group">
                 @foreach($results as $row)
-                    <tr>
-                        <td>{{ $row->position_text }}</td>
-                        <td>
-                            <span class="driver-name">{{ $row->given_name }} {{ $row->family_name }}</span>
+                    <tr class="block md:table-row mb-4 md:mb-0 even:bg-[#2a2a2a] hover:bg-[#333] rounded-lg md:rounded-none p-3 md:p-0">
+                        <td class="block md:table-cell p-2 md:p-3">
+                            <span class="block font-bold text-gray-400 md:hidden">Pos</span>
+                            <span>{{ $row->position_text }}</span>
+                        </td>
+                        <td class="block md:table-cell p-2 md:p-3">
+                            <span class="block font-bold text-gray-400 md:hidden">Driver</span>
+                            <span class="font-bold">{{ $row->given_name }} {{ $row->family_name }}</span>
                             @if($row->code)
-                                <span class="driver-code">({{ $row->code }})</span>
+                                <span class="text-gray-400 text-sm">({{ $row->code }})</span>
                             @endif
                         </td>
-                        <td>{{ $row->driver_nationality }}</td>
-                        <td>{{ $row->constructor_name }}</td>
-                        <td>{{ $row->grid }}</td>
-                        <td>{{ $row->laps }}</td>
-                        <td>{{ $row->race_time ?? '—' }}</td>
-                        <td>{{ $row->points }}</td>
-                        <td>
+                        <td class="block md:table-cell p-2 md:p-3">
+                            <span class="block font-bold text-gray-400 md:hidden">Nationality</span>
+                            <span>{{ $row->driver_nationality }}</span>
+                        </td>
+                        <td class="block md:table-cell p-2 md:p-3">
+                            <span class="block font-bold text-gray-400 md:hidden">Constructor</span>
+                            <span>{{ $row->constructor_name }}</span>
+                        </td>
+                        <td class="block md:table-cell p-2 md:p-3">
+                            <span class="block font-bold text-gray-400 md:hidden">Grid</span>
+                            <span>{{ $row->grid }}</span>
+                        </td>
+                        <td class="block md:table-cell p-2 md:p-3">
+                            <span class="block font-bold text-gray-400 md:hidden">Laps</span>
+                            <span>{{ $row->laps }}</span>
+                        </td>
+                        <td class="block md:table-cell p-2 md:p-3">
+                            <span class="block font-bold text-gray-400 md:hidden">Time</span>
+                            <span>{{ $row->race_time ?? '—' }}</span>
+                        </td>
+                        <td class="block md:table-cell p-2 md:p-3">
+                            <span class="block font-bold text-gray-400 md:hidden">Points</span>
+                            <span>{{ $row->points }}</span>
+                        </td>
+                        <td class="block md:table-cell p-2 md:p-3">
+                            <span class="block font-bold text-gray-400 md:hidden">Fastest Lap</span>
                             @if($row->fastest_lap_time)
-                                {{ $row->fastest_lap_time }} (Rank {{ $row->fastest_lap_rank }})
+                                <span>{{ $row->fastest_lap_time }} (Rank {{ $row->fastest_lap_rank }})</span>
                             @else
-                                —
+                                <span>—</span>
                             @endif
                         </td>
                     </tr>

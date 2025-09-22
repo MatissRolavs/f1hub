@@ -1,92 +1,43 @@
 <x-app-layout>
-<style>
-    .standings-container {
-        background-color: #1a1a1a;
-        border-radius: 12px;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.4);
-        color: #fff;
-        font-family: monospace;
-        padding: 2rem;
-    }
-    table {
-        width: 100%;
-        border-collapse: collapse;
-    }
-    th, td {
-        padding: 0.75rem;
-        text-align: left;
-    }
-    th {
-        background-color: #222;
-        color: rgb(156 163 175);
-        text-transform: uppercase;
-        font-size: 0.9rem;
-    }
-    tr:nth-child(even) {
-        background-color: #2a2a2a;
-    }
-    tr:hover {
-        background-color: #333;
-    }
-    .constructor-name {
-        font-weight: bold;
-    }
-
-    /* Mobile styles */
-    @media (max-width: 768px) {
-        table, thead, tbody, th, td, tr {
-            display: block;
-            width: 100%;
-        }
-        thead {
-            display: none; /* hide table header */
-        }
-        tr {
-            margin-bottom: 1rem;
-            background-color: #2a2a2a;
-            border-radius: 8px;
-            padding: 0.5rem;
-        }
-        td {
-            padding: 0.5rem;
-            text-align: right;
-            position: relative;
-        }
-        td::before {
-            content: attr(data-label);
-            position: absolute;
-            left: 0.75rem;
-            font-weight: bold;
-            text-align: left;
-            color: rgb(156 163 175);
-        }
-    }
-</style>
-
 <div class="px-4 sm:px-6 lg:px-8 max-w-6xl mx-auto mt-8">
-    <div class="standings-container">
+    <div class="bg-[#1a1a1a] rounded-xl shadow-lg text-white font-mono p-8">
         <h2 class="text-2xl font-bold mb-4 text-center audiowide-regular">
             {{ $season }} Constructors Standings
         </h2>
 
-        <table>
-            <thead>
+        <table class="w-full border-collapse md:table block">
+            <thead class="hidden md:table-header-group">
                 <tr>
-                    <th>Pos</th>
-                    <th>Constructor</th>
-                    <th>Nationality</th>
-                    <th>Points</th>
-                    <th>Wins</th>
+                    <th class="bg-[#222] text-gray-400 uppercase text-sm p-3 text-left">Pos</th>
+                    <th class="bg-[#222] text-gray-400 uppercase text-sm p-3 text-left">Constructor</th>
+                    <th class="bg-[#222] text-gray-400 uppercase text-sm p-3 text-left">Nationality</th>
+                    <th class="bg-[#222] text-gray-400 uppercase text-sm p-3 text-left">Points</th>
+                    <th class="bg-[#222] text-gray-400 uppercase text-sm p-3 text-left">Wins</th>
                 </tr>
             </thead>
-            <tbody>
+            <tbody class="block md:table-row-group">
                 @foreach($standings as $index => $row)
-                    <tr>
-                        <td data-label="Pos">{{ $index + 1 }}</td>
-                        <td data-label="Constructor" class="constructor-name">{{ $row->constructor_name }}</td>
-                        <td data-label="Nationality">{{ $row->constructor_nationality }}</td>
-                        <td data-label="Points">{{ $row->points }}</td>
-                        <td data-label="Wins">{{ $row->wins }}</td>
+                    <tr class="block md:table-row mb-4 md:mb-0 even:bg-[#2a2a2a] hover:bg-[#333] rounded-lg md:rounded-none p-3 md:p-0">
+                        <td class="block md:table-cell p-2 md:p-3">
+                            <span class="block font-bold text-gray-400 md:hidden">Pos</span>
+                            <span>{{ $index + 1 }}</span>
+                        </td>
+                        <td class="block md:table-cell p-2 md:p-3">
+                            <span class="block font-bold text-gray-400 md:hidden">Constructor</span>
+                            <span class="font-bold">{{ $row->constructor_name }}</span>
+                        </td>
+                        <td class="block md:table-cell p-2 md:p-3">
+                            <span class="block font-bold text-gray-400 md:hidden">Nationality</span>
+                            <span>{{ $row->constructor_nationality }}</span>
+                        </td>
+                        <td class="block md:table-cell p-2 md:p-3">
+                            <span class="block font-bold text-gray-400 md:hidden">Points</span>
+                            <span>{{ $row->points }}</span>
+                        </td>
+                        <td class="block md:table-cell p-2 md:p-3">
+                            <span class="block font-bold text-gray-400 md:hidden">Wins</span>
+                            <span>{{ $row->wins }}</span>
+                        </td>
                     </tr>
                 @endforeach
             </tbody>

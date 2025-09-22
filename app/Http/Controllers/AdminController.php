@@ -3,28 +3,51 @@
 namespace App\Http\Controllers;
 use App\Models\Race;
 use Illuminate\Http\Request;
-
+use Illuminate\Support\Facades\Auth;
 class AdminController extends Controller{
 
     public function panel()
     {
+        if (Auth::user()->role !== 'admin') {
+            abort(403, 'Unauthorized');
+        }
+        else
+        {
         return view('admin.panel');
+        }
     }
     public function data(){
-        return
-        view('admin.data');
+        if (Auth::user()->role !== 'admin') {
+            abort(403, 'Unauthorized');
+        }
+        else
+        {
+            return view('admin.data');
+        }
     }
     public function index()
+    { 
+    if (Auth::user()->role !== 'admin') {
+        abort(403, 'Unauthorized');
+    }
+    else
     {
         $races = Race::orderBy('date')->get();
         return view('admin.races.index', compact('races'));
+    }
     }
 
     
 
 public function edit(Race $race)
+{ 
+if (Auth::user()->role !== 'admin') {
+    abort(403, 'Unauthorized');
+}
+else
 {
     return view('admin.races.edit', compact('race'));
+}
 }
 
 public function update(Request $request, Race $race)

@@ -31,9 +31,11 @@
                     <x-nav-link :href="route('game.index')" :active="request()->routeIs('game.index')" class="text-white audiowide-regular">
                         {{ __('PREDICTION GAME') }}
                     </x-nav-link>
-                    <x-nav-link :href="route('admin.panel')" :active="request()->routeIs('admin.panel')" class="text-white audiowide-regular">
-                        {{ __('ADMIN') }}
-                    </x-nav-link>
+                    @if (Auth::user()->role == 'admin')
+                        <x-nav-link :href="route('admin.panel')" :active="request()->routeIs('admin.panel')" class="text-white audiowide-regular">
+                            {{ __('ADMIN') }}
+                        </x-nav-link>
+                    @endif
                 </div>
             </div>
 
