@@ -1,4 +1,4 @@
-<nav x-data="{ open: false }" class="bg-gray-900 border-b border-gray-100 font-mono text-white">
+<nav x-data="{ open: false }" class="bg-gray-900 fixed top-0 w-full z-50 border-b border-gray-100 font-mono text-white">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 bg-gray-900 rounded-2xl">
         <div class="flex items-center justify-between h-16">
 
@@ -22,9 +22,33 @@
                     <x-nav-link :href="route('races.index')" :active="request()->routeIs('races.index')" class="text-white audiowide-regular">
                         {{ __('RACES') }}
                     </x-nav-link>
-                    <x-nav-link :href="route('standings.index')" :active="request()->routeIs('standings.index')" class="text-white audiowide-regular">
-                        {{ __('STANDINGS') }}
-                    </x-nav-link>
+                    <div x-data="{ open: false }" class="relative">
+                        <!-- Trigger -->
+                        <button @mouseenter="open = true" @mouseleave="open = false"
+                                class="text-white audiowide-regular flex items-center gap-1">
+                            {{ __('STANDINGS') }}
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M19 9l-7 7-7-7" />
+                            </svg>
+                        </button>
+
+                        <!-- Dropdown styled like a mini navbar -->
+                        <div x-show="open" x-transition
+                            @mouseenter="open = true" @mouseleave="open = false"
+                            class="absolute left-0 mt-2 w-full flex justify-center z-50">
+                            <div class="bg-gray-800 rounded-lg px-6 py-3 flex gap-4 shadow-lg">
+                                <a href="{{ route('standings.index', ['season' => now()->year]) }}"
+                                class="px-4 py-2 rounded-full bg-gray-700 text-white text-sm font-semibold hover:bg-gray-600 transition">
+                                    Driver Standings
+                                </a>
+                                <a href="{{ route('standings.constructors', ['season' => now()->year]) }}"
+                                class="px-4 py-2 rounded-full bg-gray-700 text-white text-sm font-semibold hover:bg-gray-600 transition">
+                                    Constructor Standings
+                                </a>
+                            </div>
+                        </div>
+                    </div>
                     <x-nav-link :href="route('forums.index')" :active="request()->routeIs('forums.index')" class="text-white audiowide-regular">
                         {{ __('FORUMS') }}
                     </x-nav-link>

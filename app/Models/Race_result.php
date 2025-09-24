@@ -36,4 +36,8 @@ public function driver()
 {
     return $this->belongsTo(Driver::class);
 }
+public function constructor()
+    {
+        return $this->belongsTo(Constructor::class);
+    }
 }

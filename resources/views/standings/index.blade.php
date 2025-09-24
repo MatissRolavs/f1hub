@@ -29,7 +29,9 @@
                 </td>
                 <td data-label="Driver" class="block md:table-cell p-2 md:p-3">
                     <span class="block font-bold text-gray-400 md:hidden">Driver</span>
-                    <span class="font-bold">{{ $row->given_name }} {{ $row->family_name }}</span>
+                    <a href="{{ route('drivers.show', $row->id) }}">
+                        <span class="font-bold">{{ $row->given_name }} {{ $row->family_name }}</span>
+                    </a>
                     @if($row->code)
                         <span class="text-gray-400 text-sm">({{ $row->code }})</span>
                     @endif

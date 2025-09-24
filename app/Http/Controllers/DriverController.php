@@ -94,7 +94,7 @@ class DriverController extends Controller
 
 
 public function showStandings()
-{
+{   
     $season = date('Y'); // current season
 
     $standings = DB::table('standings')
@@ -104,6 +104,8 @@ public function showStandings()
             'standings.position',
             'standings.points',
             'standings.wins',
+            'drivers.id as id', // primary key for show route
+            'drivers.driver_id', // Ergast-style ID if you use that
             'drivers.given_name',
             'drivers.family_name',
             'drivers.code',
@@ -114,7 +116,7 @@ public function showStandings()
         ->where('standings.season', $season)
         ->orderBy('standings.position')
         ->get();
-
+        
     return view('standings.index', compact('standings', 'season'));
 }
 
@@ -163,7 +165,7 @@ public function showDriver(Driver $driver)
     $driver->load(['latestStanding.constructor']);
 
     // Compute and cache career stats to reduce API calls (optional)
-    $careerStats = Cache::remember("driver:{$driver->driver_id}:career", now()->addHours(6), function () use ($driver) {
+        $careerStats = Cache::remember("driver:{$driver->driver_id}:career", now()->addHours(6), function () use ($driver) {
         $races = $this->fetchAllDriverResults($driver->driver_id); // full pagination
 
         // Flatten to the primary classified result per race

@@ -94,11 +94,31 @@ class RaceController extends Controller
         // Helper to prepare race card data
         $prepare = function ($race, $label) use ($f1Images) {
             if (!$race) return null;
+        
             $raceDate = Carbon::parse($race->date);
             $status = $raceDate->isPast() ? 'Completed' : 'Upcoming';
             $statusClass = $raceDate->isPast() ? 'bg-green-600' : 'bg-yellow-500';
             $image = $race->track_image ?: $f1Images[array_rand($f1Images)];
-
+        
+            // 🔑 Fetch top 3 results
+            $top3 = [];
+            if ($status === 'Completed') {
+                $results = \App\Models\Race_result::with(['driver','constructor'])
+                    ->where('season', $race->season)
+                    ->where('round', $race->round)
+                    ->orderBy('position')
+                    ->limit(3)
+                    ->get();
+        
+                foreach ($results as $res) {
+                    $top3[] = [
+                        'driver' => $res->driver->given_name . ' ' . $res->driver->family_name,
+                        'team'   => $res->constructor->name,
+                        'time'   => $res->race_time ?? $res->status,
+                    ];
+                }
+            }
+        
             return [
                 'label'        => $label,
                 'name'         => $race->name,
@@ -112,6 +132,7 @@ class RaceController extends Controller
                 'lapRecord'    => $race->lap_record,
                 'description'  => $race->description,
                 'resultsUrl'   => route('races.show', ['season' => $race->season, 'round' => $race->round]),
+                'top3'         => $top3, // ✅ attach top 3
             ];
         };
 

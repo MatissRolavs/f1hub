@@ -1,9 +1,13 @@
 <x-app-layout>
-<div class="max-w-7xl mx-auto px-4 py-6">
-    <h2 class="text-2xl font-bold text-center text-white audiowide-regular">CURRENT SEASON F1 DRIVERS</h2>
-    <br>
+<div class="max-w-7xl mx-auto px-4 py-8 space-y-9">
+    <h2 class="text-2xl font-bold text-center text-white audiowide-regular">
+        CURRENT SEASON F1 DRIVERS
+    </h2>
+
     @if(session('success'))
-        <div class="bg-green-100 text-green-800 p-4 rounded mb-4">{{ session('success') }}</div>
+        <div class="bg-green-100 text-green-800 p-4 rounded mb-4">
+            {{ session('success') }}
+        </div>
     @endif
 
     @if($drivers->count())
@@ -19,15 +23,15 @@
                     ];
                     $bgColor = $teamColors[$constructorName] ?? '#E5E7EB';
                     $nationalityMap = [
-                        'Australian' => 'au', 'Austrian' => 'at', 'Belgian' => 'be', 'Brazilian' => 'br',
-                        'British' => 'gb', 'Canadian' => 'ca', 'Chinese' => 'cn', 'Danish' => 'dk',
-                        'Dutch' => 'nl', 'Finnish' => 'fi', 'French' => 'fr', 'German' => 'de',
-                        'Italian' => 'it', 'Japanese' => 'jp', 'Mexican' => 'mx', 'Monegasque' => 'mc',
-                        'New Zealander' => 'nz', 'Polish' => 'pl', 'Portuguese' => 'pt', 'Russian' => 'ru',
-                        'Spanish' => 'es', 'Swedish' => 'se', 'Swiss' => 'ch', 'Thai' => 'th',
-                        'Turkish' => 'tr', 'American' => 'us', 'Czech' => 'cz', 'South African' => 'za',
-                        'Argentine' => 'ar', 'Indian' => 'in', 'Irish' => 'ie', 'Ukrainian' => 'ua',
-                        'Estonian' => 'ee', 'Latvian' => 'lv', 'Lithuanian' => 'lt',
+                        'Australian' => 'au','Austrian' => 'at','Belgian' => 'be','Brazilian' => 'br',
+                        'British' => 'gb','Canadian' => 'ca','Chinese' => 'cn','Danish' => 'dk',
+                        'Dutch' => 'nl','Finnish' => 'fi','French' => 'fr','German' => 'de',
+                        'Italian' => 'it','Japanese' => 'jp','Mexican' => 'mx','Monegasque' => 'mc',
+                        'New Zealander' => 'nz','Polish' => 'pl','Portuguese' => 'pt','Russian' => 'ru',
+                        'Spanish' => 'es','Swedish' => 'se','Swiss' => 'ch','Thai' => 'th',
+                        'Turkish' => 'tr','American' => 'us','Czech' => 'cz','South African' => 'za',
+                        'Argentine' => 'ar','Indian' => 'in','Irish' => 'ie','Ukrainian' => 'ua',
+                        'Estonian' => 'ee','Latvian' => 'lv','Lithuanian' => 'lt',
                     ];
                     $flagCode = $nationalityMap[$driver->nationality] ?? 'xx';
                     $flagUrl = "https://flagcdn.com/w40/" . $flagCode . ".png";
@@ -46,22 +50,29 @@
                                     class="w-full h-[520px] object-cover bg-white rounded-t-2xl"
                                     onerror="this.onerror=null;this.src='https://upload.wikimedia.org/wikipedia/commons/thumb/a/ac/No_image_available.svg/480px-No_image_available.svg.png';"
                                 >
-                                <div class="p-4 text-white h-[100px] flex flex-col justify-between rounded-b-2xl">
-                                    <div class="flex items-center justify-between mb-1">
-                                        <h5 class="text-base font-semibold leading-tight audiowide-regular">
+                                <div class="p-6 text-white min-h-[200px] flex flex-col justify-between rounded-b-2xl">
+                                    <!-- Name + Flag -->
+                                    <div class="flex items-center justify-between mb-3">
+                                        <h5 class="text-xl font-bold leading-tight audiowide-regular">
                                             {{ $driver->given_name }} {{ $driver->family_name }}
                                         </h5>
-                                        <img src="{{ $flagUrl }}" alt="{{ $driver->nationality }}" class="w-6 h-4 rounded shadow">
+                                        <img src="{{ $flagUrl }}" alt="{{ $driver->nationality }}" class="w-8 h-5 rounded shadow">
                                     </div>
-                                    <p class="text-sm audiowide-regular"><strong>Number:</strong> {{ $driver->permanent_number ?? '—' }}</p>
-                                    <p class="text-sm audiowide-regular"><strong>Team:</strong> {{ $constructorName }}</p>
+
+                                    <!-- Number (left) + Team (right) -->
+                                    <div class="flex items-center justify-between text-lg audiowide-regular">
+                                        <p><strong>Number:</strong> {{ $driver->permanent_number ?? '—' }}</p>
+                                        <p><strong>Team:</strong> {{ $constructorName }}</p>
+                                    </div>
                                 </div>
+
+
                             </div>
 
                             {{-- Back Side --}}
                             <div class="absolute w-full h-full [backface-visibility:hidden] [transform:rotateY(180deg)] flex flex-col justify-center items-center p-6 rounded-2xl"
                                  style="background-color: {{ $bgColor }};">
-                                <h3 class="text-xl font-semibold mb-4 audiowide-regular">Season Stats</h3>
+                                <h3 class="text-xl font-semibold mb-4 audiowide-regular text-white">Season Stats</h3>
                                 <ul class="space-y-2 text-base text-white audiowide-regular">
                                     <li><strong>Position:</strong> {{ $driver->latestStanding->position ?? '—' }}</li>
                                     <li><strong>Points:</strong> {{ $driver->latestStanding->points ?? '—' }}</li>
@@ -75,7 +86,10 @@
             @endforeach
         </div>
     @else
-        <p class="text-center text-gray-600">No drivers found. <a href="{{ route('drivers.sync') }}" class="text-blue-500 hover:underline">Sync now</a></p>
+        <p class="text-center text-gray-600">
+            No drivers found. 
+            <a href="{{ route('drivers.sync') }}" class="text-blue-500 hover:underline">Sync now</a>
+        </p>
     @endif
 </div>
 </x-app-layout>
