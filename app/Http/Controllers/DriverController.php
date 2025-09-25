@@ -81,11 +81,7 @@ class DriverController extends Controller
         return redirect()->back()->with('success', "Standings for {$season} synced successfully.");
     }
     }
-    public function sync()
-    {
-        $this->openF1->syncStandings(2025);
-        return redirect()->route('drivers.index2')->with('success', 'Standings synced!');
-    }
+
     public function index()
     {
         $drivers = Driver::with(['latestStanding.constructor'])->get();
