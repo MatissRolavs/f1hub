@@ -52,13 +52,9 @@ Follow these steps to get F1Hub running on your local machine.
 
 4. **Configure `.env`**
 
-    Set database credentials, app key, etc. For example:
+    Set database credentials, etc. For example:
 
     ```text
-    APP_NAME=F1Hub
-    APP_ENV=local
-    APP_KEY=base64:...  
-    APP_URL=http://localhost
     
     DB_CONNECTION=mysql
     DB_HOST=127.0.0.1
