@@ -19,7 +19,7 @@ A platform to explore Formula 1 data - drivers, teams, races, and results, built
 ## 🧰 Tech Stack
 
 | Backend / Server | Laravel (PHP) |
-| Frontend / UI | Vue.js / Vite / Tailwind CSS |
+| Frontend / UI | Vue.js / Vite / Tailwind CSS / AnimeJS |
 | Database | MySQL |
 | API | JolpicaF1API |
 
