@@ -90,6 +90,11 @@ Follow these steps to get F1Hub running on your local machine.
     ```bash
     php artisan serve
     ```
+8. **Sync data as admin**
+
+    ```bash
+    change in your prefered database manager your logged in user role to "admin" and use the admin panel sync functions to get data from the API
+    ```
 
 You should now be able to view the app at `http://localhost:8000`.
 
