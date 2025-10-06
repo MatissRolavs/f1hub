@@ -15,6 +15,19 @@ Route::get('/', function () {
 
 Route::get('/dashboard', [HomeController::class, 'index'])->name('dashboard');
 
+Route::get('/drivers', [DriverController::class, 'index'])->name('drivers.index');
+Route::get('/drivers/{driver}', [DriverController::class, 'showDriver'])->name('drivers.show');
+Route::get('/standings', [DriverController::class, 'showStandings'])->name('standings.index');
+
+Route::get('/races/{season}/{round}', [RaceController::class, 'raceShow'])->name('races.show');
+Route::get('/races', [RaceController::class, 'showRacesFromDb'])->name('races.index');
+
+Route::get('/standings/constructors/{season}', [ConstructorController::class, 'constructorsStandings'])->name('standings.constructors');
+
+Route::get('/forums', [ForumController::class, 'index'])->name('forums.index');
+Route::get('/forums/{race}', [ForumController::class, 'show'])->name('forums.show');
+Route::post('/forums/{race}', [ForumController::class, 'store'])->middleware('auth')->name('forums.store');
+Route::get('/posts/{post}', [ForumController::class, 'showPost'])->name('posts.show');
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
@@ -22,23 +35,10 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
     Route::get('/drivers/sync', [DriverController::class, 'syncStandings'])->name('drivers.sync');
-    Route::get('/drivers', [DriverController::class, 'index'])->name('drivers.index');
-    Route::get('/drivers/{driver}', [DriverController::class, 'showDriver'])->name('drivers.show');
-    Route::get('/standings', [DriverController::class, 'showStandings'])->name('standings.index');
-
-    Route::get('/races/sync', [RaceController::class, 'currentSeasonRaces'])->name('races.sync');
-    Route::get('/races', [RaceController::class, 'showRacesFromDb'])->name('races.index');
-    Route::get('/results/sync', [RaceController::class, 'syncSeasonRaceResults'])->name('results.index');
-    Route::get('/races/{season}/{round}', [RaceController::class, 'raceShow'])
-    ->name('races.show');
-
-    Route::get('/standings/constructors/{season}', [ConstructorController::class, 'constructorsStandings'])
-    ->name('standings.constructors');
     
-    Route::get('/forums', [ForumController::class, 'index'])->name('forums.index');
-    Route::get('/forums/{race}', [ForumController::class, 'show'])->name('forums.show');
-    Route::post('/forums/{race}', [ForumController::class, 'store'])->middleware('auth')->name('forums.store');
-    Route::get('/posts/{post}', [ForumController::class, 'showPost'])->name('posts.show');
+    Route::get('/races/sync', [RaceController::class, 'currentSeasonRaces'])->name('races.sync');
+    Route::get('/results/sync', [RaceController::class, 'syncSeasonRaceResults'])->name('results.index');
+    
     Route::post('/posts/{post}/comment', [ForumController::class, 'storeComment'])->middleware('auth')->name('posts.comment');
     Route::post('/posts/{post}/like', [ForumController::class, 'toggleLike'])->middleware('auth')->name('posts.like');
 

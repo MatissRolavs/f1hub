@@ -23,7 +23,7 @@ class RaceController extends Controller
             abort(403, 'Unauthorized');
         }
         else{
-        // 1️⃣ Fetch races from Ergast API
+        // Fetch races from Ergast API
         $response = Http::get("https://api.jolpi.ca/ergast/f1/current.json");
         if ($response->failed()) {
             abort(500, 'Unable to fetch race data');
@@ -32,10 +32,10 @@ class RaceController extends Controller
         $data = $response->json();
         $races = $data['MRData']['RaceTable']['Races'] ?? [];
 
-        // 2️⃣ Sort by date ascending
+        // Sort by date ascending
         usort($races, fn($a, $b) => strtotime($a['date']) <=> strtotime($b['date']));
 
-        // 3️⃣ Store/update races in DB
+        // Store/update races in DB
         foreach ($races as $race) {
             // Convert ISO 8601 time (with Z) to MySQL TIME format
             $time = null;
@@ -60,7 +60,7 @@ class RaceController extends Controller
             );
         }
 
-        // 4️⃣ Find the first upcoming race index
+        //  Find the first upcoming race index
         $today = Carbon::today();
         $startIndex = 0;
         foreach ($races as $i => $race) {
@@ -74,7 +74,7 @@ class RaceController extends Controller
             }
         }
 
-        // 5️⃣ Pass data to view
+        // Pass data to view
         return redirect()->back()->with('success', 'Current season races have been updated.');
     }
     }
@@ -91,7 +91,6 @@ class RaceController extends Controller
             'https://cdn.racingnews365.com/_1800x945_crop_center-center_75_none/E_BeHUFX0AA0QLs.jpeg?v=1673948090',
         ];
 
-        // Helper to prepare race card data
         $prepare = function ($race, $label) use ($f1Images) {
             if (!$race) return null;
         
@@ -100,7 +99,6 @@ class RaceController extends Controller
             $statusClass = $raceDate->isPast() ? 'bg-green-600' : 'bg-yellow-500';
             $image = $race->track_image ?: $f1Images[array_rand($f1Images)];
         
-            // 🔑 Fetch top 3 results
             $top3 = [];
             if ($status === 'Completed') {
                 $results = \App\Models\Race_result::with(['driver','constructor'])
@@ -132,7 +130,7 @@ class RaceController extends Controller
                 'lapRecord'    => $race->lap_record,
                 'description'  => $race->description,
                 'resultsUrl'   => route('races.show', ['season' => $race->season, 'round' => $race->round]),
-                'top3'         => $top3, // ✅ attach top 3
+                'top3'         => $top3,
             ];
         };
 
@@ -200,7 +198,6 @@ public function syncSeasonRaceResults($year = 2025)
         return redirect()->back()->with('error', 'No race results found for this season.');
     }
 
-    // Delete old results for this season
     Race_result::where('season', $year)->delete();
 
     $insertCount = 0;
@@ -259,7 +256,6 @@ public function syncSeasonRaceResults($year = 2025)
             }
         }
 
-        // ✅ Only score if race date is in the past
         if (!empty($race['date']) && \Carbon\Carbon::parse($race['date'])->isPast()) {
             $this->scorePredictionsForRace($race['season'], $race['round'], $race['raceName']);
         } else {
@@ -275,9 +271,9 @@ protected function scorePredictionsForRace($season, $round, $raceName)
     $actualOrder = Race_result::where('season', $season)
         ->where('round', $round)
         ->orderBy('position')
-        ->with('driver') // relationship to Driver model
+        ->with('driver')
         ->get()
-        ->pluck('driver.driver_id') // Ergast ID
+        ->pluck('driver.driver_id')
         ->values()
         ->toArray();
 

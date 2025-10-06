@@ -11,35 +11,48 @@ use Illuminate\Http\Request;
 class ForumController extends Controller
 {
     public function index(Request $request)
-{
-    $sort = $request->get('sort', 'latest'); // default sort
-    $search = $request->get('search');
-
-    $races = \App\Models\Race::withCount('forumPosts') // assuming relation in Race model
-        ->when($search, function ($query, $search) {
-            $query->where('name', 'like', "%{$search}%");
-        });
-
-    switch ($sort) {
-        case 'oldest':
-            $races->orderBy('date', 'asc');
-            break;
-        case 'most_posts':
-            $races->orderBy('forum_posts_count', 'desc');
-            break;
-        case 'least_posts':
-            $races->orderBy('forum_posts_count', 'asc');
-            break;
-        case 'latest':
-        default:
-            $races->orderBy('date', 'desc');
-            break;
+    {
+        $sort = $request->get('sort', 'latest');
+        $search = $request->get('search');
+    
+        $races = \App\Models\Race::withCount('forumPosts')
+            ->when($search, function ($query, $search) {
+                $query->where('name', 'like', "%{$search}%");
+            });
+    
+        switch ($sort) {
+            case 'oldest':
+                $races->orderBy('date', 'asc');
+                break;
+            case 'most_posts':
+                $races->orderBy('forum_posts_count', 'desc');
+                break;
+            case 'least_posts':
+                $races->orderBy('forum_posts_count', 'asc');
+                break;
+            case 'latest':
+            default:
+                $races->orderBy('date', 'desc');
+                break;
+        }
+    
+        $races = $races->get();
+    
+        // === Forum Stats ===
+        $totalPosts = \App\Models\ForumPost::count();   
+        $thanksLeft = \App\Models\Like::count();    
+        $totalRaces = \App\Models\Race::count();   
+        
+        return view('forums.index', compact(
+            'races',
+            'sort',
+            'search',
+            'totalPosts',
+            'thanksLeft',
+            'totalRaces',
+        ));
     }
-
-    $races = $races->get();
-
-    return view('forums.index', compact('races', 'sort', 'search'));
-}
+    
 
 public function show($raceId, Request $request)
 {

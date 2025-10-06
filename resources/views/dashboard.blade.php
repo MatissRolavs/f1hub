@@ -1,21 +1,19 @@
 <x-app-layout>
 <div class="min-h-screen flex flex-col gap-12 px-4 sm:px-6 lg:px-8 py-12 bg-gray-900 font-mono text-white tracking-[1.5px] leading-[1.8]">
-
     <!-- Welcome Box -->
     <div class="bg-white/5 border border-white/20 rounded-xl p-6 sm:p-8 max-w-5xl w-full mx-auto text-center shadow-[0_0_20px_rgba(255,0,0,0.3)] hover:-translate-y-[5px] hover:shadow-[0_0_30px_rgba(255,0,0,0.6)] transition-all duration-300">
         <img src="https://copilot.microsoft.com/th/id/BCO.1853a237-4c9c-4232-84b3-e8ae2bb8df46.png"
              alt="F1 Logo"
              class="max-w-[120px] md:max-w-[150px] h-auto mx-auto mb-4 block">
-        <h1 class="audiowide-regular font-bold uppercase mb-4 text-xl md:text-3xl">🏎️ Welcome to F1 Hub</h1>
+        <h1 class="audiowide-regular font-bold uppercase mb-4 text-xl md:text-3xl">Welcome to F1 Hub</h1>
         <p class="text-base md:text-lg">
             Your ultimate destination for everything Formula&nbsp;1 — race schedules, live standings, driver profiles, team stats, forums, and more.
         </p>
     </div>
+   <!-- Drivers Preview -->
+<div class="max-w-7xl mx-auto w-full px-4">
+    <h2 class="audiowide-regular text-2xl font-bold uppercase mb-10 text-center">Featured Drivers</h2>
 
-    <!-- Drivers Preview -->
-    <!-- Drivers Preview -->
-<div class="max-w-6xl mx-auto w-full">
-    <h2 class="audiowide-regular text-2xl font-bold uppercase mb-6 text-center">Featured Drivers</h2>
     <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
         @foreach($drivers->take(3) as $driver)
             @php
@@ -43,60 +41,64 @@
             @endphp
 
             <a href="{{ route('drivers.show', $driver) }}" class="block">
-                <div class="group [perspective:1000px] rounded-xl shadow-lg overflow-hidden transition-all duration-300 transform"
-                     style="background-color: {{ $bgColor }}; height: 420px;">
-                    <div class="relative w-full h-full text-center transition-transform duration-[800ms] [transform-style:preserve-3d] group-hover:[transform:rotateY(180deg)] rounded-xl">
-                        
-                        {{-- Front Side --}}
-                        <div class="absolute w-full h-full [backface-visibility:hidden] rounded-xl overflow-hidden">
-                            <img 
-                                src="https://media.formula1.com/image/upload/f_webp,c_limit,q_50,w_640/content/dam/fom-website/drivers/2025Drivers/{{ $driver->family_name }}" 
-                                alt="{{ $driver->given_name }} {{ $driver->family_name }}"
-                                class="w-full h-[295px] object-cover bg-white rounded-t-xl"
-                                onerror="this.onerror=null;this.src='https://upload.wikimedia.org/wikipedia/commons/thumb/a/ac/No_image_available.svg/480px-No_image_available.svg.png';"
-                            >
-                            <div class="p-4 text-white min-h-[140px] flex flex-col justify-between rounded-b-xl">
-                                <!-- Name + Flag -->
-                                <div class="flex items-center justify-between mb-2">
-                                    <h5 class="text-base font-bold leading-tight audiowide-regular">
-                                        {{ $driver->given_name }} {{ $driver->family_name }}
-                                    </h5>
-                                    <img src="{{ $flagUrl }}" alt="{{ $driver->nationality }}" class="w-6 h-4 rounded shadow">
-                                </div>
+                <div class="group relative rounded-2xl shadow-lg overflow-hidden transition-all duration-500 transform"
+                     style="background-color: {{ $bgColor }}; height: 740px;">
 
-                                <!-- Number (left) + Team (right) -->
-                                <div class="flex items-center justify-between text-sm audiowide-regular">
-                                    <p><strong>#</strong> {{ $driver->permanent_number ?? '—' }}</p>
-                                    <p>{{ $constructorName }}</p>
-                                </div>
+                    <!-- Image with zoom hover -->
+                    <div class="overflow-hidden rounded-t-2xl">
+                        <img 
+                            src="https://media.formula1.com/image/upload/f_webp,c_limit,q_50,w_640/content/dam/fom-website/drivers/2025Drivers/{{ $driver->family_name }}" 
+                            alt="{{ $driver->given_name }} {{ $driver->family_name }}"
+                            class="w-full h-[520px] object-cover bg-white rounded-t-2xl transform transition-transform duration-700 group-hover:scale-110"
+                            onerror="this.onerror=null;this.src='https://upload.wikimedia.org/wikipedia/commons/thumb/a/ac/No_image_available.svg/480px-No_image_available.svg.png';"
+                        >
+                    </div>
+
+                    <!-- Bottom content -->
+                    <div class="p-6 text-white flex flex-col h-[220px] rounded-b-2xl">
+                        <!-- Name + Flag -->
+                        <div class="flex items-center justify-between mb-3">
+                            <h5 class="text-xl font-bold leading-tight audiowide-regular">
+                                {{ $driver->given_name }} {{ $driver->family_name }}
+                            </h5>
+                            <img src="{{ $flagUrl }}" alt="{{ $driver->nationality }}" class="w-8 h-5 rounded shadow">
+                        </div>
+
+                        <!-- Season Stats + Number -->
+                        <div class="flex-1 flex items-center justify-between">
+                            <div>
+                                <h3 class="text-lg font-semibold mb-2 audiowide-regular text-white">Season Stats</h3>
+                                <ul class="space-y-1 text-base text-white audiowide-regular text-left">
+                                    <li><strong>Position:</strong> {{ $driver->latestStanding->position ?? '—' }}</li>
+                                    <li><strong>Points:</strong> {{ $driver->latestStanding->points ?? '—' }}</li>
+                                    <li><strong>Wins:</strong> {{ $driver->latestStanding->wins ?? '—' }}</li>
+                                </ul>
+                            </div>
+                            <div class="text-5xl font-bold audiowide-regular opacity-80">
+                                #{{ $driver->permanent_number ?? '—' }}
                             </div>
                         </div>
 
-                        {{-- Back Side --}}
-                        <div class="absolute w-full h-full [backface-visibility:hidden] [transform:rotateY(180deg)] flex flex-col justify-center items-center p-4 rounded-xl"
-                             style="background-color: {{ $bgColor }};">
-                            <h3 class="text-lg font-semibold mb-2 audiowide-regular text-white">Season Stats</h3>
-                            <ul class="space-y-1 text-sm text-white audiowide-regular">
-                                <li><strong>Position:</strong> {{ $driver->latestStanding->position ?? '—' }}</li>
-                                <li><strong>Points:</strong> {{ $driver->latestStanding->points ?? '—' }}</li>
-                                <li><strong>Wins:</strong> {{ $driver->latestStanding->wins ?? '—' }}</li>
-                            </ul>
+                        <!-- Team -->
+                        <div class="flex items-center justify-between text-lg audiowide-regular mt-4">
+                            <p></p>
+                            <p><strong>Team:</strong> {{ $constructorName }}</p>
                         </div>
-
                     </div>
                 </div>
             </a>
         @endforeach
     </div>
-    <div class="text-center mt-6">
+
+    <!-- CTA button -->
+    <div class="text-center mt-10">
         <a href="{{ route('drivers.index') }}" 
-           class="inline-block px-6 py-2 bg-red-600 hover:bg-red-700 rounded-lg font-bold uppercase tracking-wide">
+           class="inline-block px-6 py-3 bg-red-600 hover:bg-red-700 rounded-lg font-bold uppercase tracking-wide">
             View All Drivers
         </a>
     </div>
 </div>
 
-    <!-- Races Preview -->
     <!-- Featured Races Preview -->
 <div class="max-w-6xl mx-auto w-full">
     <h2 class="audiowide-regular text-2xl font-bold uppercase mb-6 text-center">Featured Races</h2>
@@ -166,19 +168,81 @@
         <div id="modalActions" class="mt-4 flex justify-end gap-2"></div>
     </div>
 </div>
+<!-- Next Race Timer -->
+<div class="bg-white/5 border border-white/20 rounded-xl p-6 sm:p-8 max-w-5xl mx-auto text-center shadow-lg">
+    <h2 class="audiowide-regular text-2xl sm:text-3xl font-bold uppercase mb-6">Next Race Countdown</h2>
+    <p class="mb-8 text-gray-300 text-lg">
+    {{ $nextRace['raceName'] ?? 'No upcoming race' }} — 
+    {{ $nextRace['Circuit']['Location']['locality'] ?? '' }},
+    {{ $nextRace['Circuit']['Location']['country'] ?? '' }}
+    </p>
 
-    <!-- Next Race Timer -->
-    <div class="bg-white/5 border border-white/20 rounded-xl p-6 max-w-3xl mx-auto text-center shadow-lg">
-    <h2 class="audiowide-regular text-xl font-bold uppercase mb-4">⏱️ Next Race Countdown</h2>
-    <p class="mb-2 text-gray-300">{{ $nextRace['name'] ?? 'No upcoming race' }} — {{ $nextRace['location'] ?? '' }}</p>
-    <div id="countdown-timer" class="text-3xl font-bold text-red-500">Loading...</div>
+    @if($nextRace)
+        <div class="w-full mb-6">
+            <div class="flex flex-col sm:flex-row justify-center items-center gap-6 sm:gap-12">
+                <!-- Days -->
+                <div class="flex flex-col items-center">
+                    <span id="days-next" 
+                          class="text-5xl sm:text-7xl font-extrabold text-white 
+                                 bg-transparent backdrop-blur-sm 
+                                 w-24 h-24 sm:w-40 sm:h-40 flex items-center justify-center 
+                                 border-2 border-white rounded-lg 
+                                 shadow-[0_0_10px_rgba(255,255,255,0.8),0_0_25px_rgba(0,0,0,1)]">
+                        0
+                    </span>
+                    <span class="text-sm uppercase text-gray-300 mt-2">Days</span>
+                </div>
+
+                <!-- Hours -->
+                <div class="flex flex-col items-center">
+                    <span id="hours-next" 
+                          class="text-5xl sm:text-7xl font-extrabold text-white 
+                                 bg-transparent backdrop-blur-sm 
+                                 w-24 h-24 sm:w-40 sm:h-40 flex items-center justify-center 
+                                 border-2 border-white rounded-lg 
+                                 shadow-[0_0_10px_rgba(255,255,255,0.8),0_0_25px_rgba(0,0,0,1)]">
+                        0
+                    </span>
+                    <span class="text-sm uppercase text-gray-300 mt-2">Hours</span>
+                </div>
+
+                <!-- Minutes -->
+                <div class="flex flex-col items-center">
+                    <span id="minutes-next" 
+                          class="text-5xl sm:text-7xl font-extrabold text-white 
+                                 bg-transparent backdrop-blur-sm 
+                                 w-24 h-24 sm:w-40 sm:h-40 flex items-center justify-center 
+                                 border-2 border-white rounded-lg 
+                                 shadow-[0_0_10px_rgba(255,255,255,0.8),0_0_25px_rgba(0,0,0,1)]">
+                        0
+                    </span>
+                    <span class="text-sm uppercase text-gray-300 mt-2">Minutes</span>
+                </div>
+
+                <!-- Seconds -->
+                <div class="flex flex-col items-center">
+                    <span id="seconds-next" 
+                          class="text-5xl sm:text-7xl font-extrabold text-white 
+                                 bg-transparent backdrop-blur-sm 
+                                 w-24 h-24 sm:w-40 sm:h-40 flex items-center justify-center 
+                                 border-2 border-white rounded-lg 
+                                 shadow-[0_0_10px_rgba(255,255,255,0.8),0_0_25px_rgba(0,0,0,1)]">
+                        0
+                    </span>
+                    <span class="text-sm uppercase text-gray-300 mt-2">Seconds</span>
+                </div>
+            </div>
+        </div>
+    @else
+        <div class="text-3xl font-bold text-red-500">No upcoming race</div>
+    @endif
 </div>
 
     <!-- Community Section -->
     <div class="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-6xl mx-auto w-full">
         <!-- Forums -->
         <div class="bg-white/5 border border-white/20 rounded-xl p-6 shadow-lg">
-            <h2 class="audiowide-regular text-xl font-bold uppercase mb-4">💬 Forums</h2>
+            <h2 class="audiowide-regular text-xl font-bold uppercase mb-4">Forums</h2>
             <p class="mb-4 text-gray-300">Join the conversation with other F1 fans. Share your thoughts, discuss races, and connect with the community.</p>
             <a href="{{ route('forums.index') }}" 
                class="inline-block px-4 py-2 bg-red-600 hover:bg-red-700 rounded-lg font-bold uppercase tracking-wide">
@@ -188,7 +252,7 @@
 
         <!-- Predictions -->
         <div class="bg-white/5 border border-white/20 rounded-xl p-6 shadow-lg">
-            <h2 class="audiowide-regular text-xl font-bold uppercase mb-4">🎯 Make Your Predictions</h2>
+            <h2 class="audiowide-regular text-xl font-bold uppercase mb-4">Make Your Predictions</h2>
             <p class="mb-4 text-gray-300">Think you know who will win the next race? Submit your predictions and see how you stack up against others.</p>
             <a href="{{ route('game.index') }}" 
                class="inline-block px-4 py-2 bg-red-600 hover:bg-red-700 rounded-lg font-bold uppercase tracking-wide">
@@ -198,40 +262,47 @@
     </div>
 
 </div>
-
 <!-- Countdown Script -->
 <script>
-    // Example: Replace with your next race date
-   (function(){
+(function(){
     @if($nextRace)
-        const raceDate = new Date("{{ $nextRace['date'] }}T{{ $nextRace['time'] ?? '00:00:00Z' }}").getTime();
-        const countdownEl = document.getElementById("countdown-timer");
+    const raceDate = new Date("{{ $nextRace['date'] }}T{{ $nextRace['time'] ?? '00:00:00Z' }}").getTime();
 
-        function updateCountdown() {
-            const now = new Date().getTime();
-            const distance = raceDate - now;
+    const daysEl = document.getElementById("days-next");
+    const hoursEl = document.getElementById("hours-next");
+    const minutesEl = document.getElementById("minutes-next");
+    const secondsEl = document.getElementById("seconds-next");
 
-            if (distance <= 0) {
-                countdownEl.innerHTML = "Race has started!";
-                clearInterval(timer);
-                setTimeout(() => window.location.reload(), 2000);
-                return;
-            }
+    function updateCountdown() {
+        const now = new Date().getTime();
+        const distance = raceDate - now;
 
-            const days = Math.floor(distance / (1000 * 60 * 60 * 24));
-            const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-            const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-            const seconds = Math.floor((distance % (1000 * 60)) / 1000);
-
-            countdownEl.innerHTML = `${days}d ${hours}h ${minutes}m ${seconds}s`;
+        if (distance <= 0) {
+            daysEl.innerHTML = "0";
+            hoursEl.innerHTML = "0";
+            minutesEl.innerHTML = "0";
+            secondsEl.innerHTML = "0";
+            clearInterval(timer);
+            return;
         }
 
-        updateCountdown();
-        const timer = setInterval(updateCountdown, 1000);
-    @else
-        document.getElementById("countdown-timer").innerHTML = "No upcoming race found.";
+        const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+        const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+        const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+        daysEl.innerHTML = days;
+        hoursEl.innerHTML = hours;
+        minutesEl.innerHTML = minutes;
+        secondsEl.innerHTML = seconds;
+    }
+
+    updateCountdown();
+    const timer = setInterval(updateCountdown, 1000);
     @endif
 })();
+
+
     
     const modalOverlay = document.getElementById('raceModalOverlay');
     const closeModalBtn = document.getElementById('closeModal');

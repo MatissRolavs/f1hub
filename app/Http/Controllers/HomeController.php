@@ -7,26 +7,37 @@ use App\Models\Driver;
 use App\Models\Race;
 use App\Models\Race_result;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Http;
 
 class HomeController extends Controller
 {
     public function index()
-    {
-        // Drivers preview
-        $drivers = Driver::with('latestStanding.constructor')
-            ->take(3)
-            ->get();
+{
+    // Drivers preview
+    $drivers = Driver::with('latestStanding.constructor')
+        ->take(3)
+        ->get();
 
-        // Featured races preview
-        $featuredRaces = $this->getFeaturedRaces();
-        $nextRace = collect($featuredRaces)->firstWhere('label', 'Next Race');
+    // Featured races (custom cards)
+    $featuredRaces = $this->getFeaturedRaces();
 
-        return view('dashboard', [
-            'drivers'       => $drivers,
-            'featuredRaces' => $featuredRaces,
-            'nextRace'  => $nextRace,
-        ]);
-    }
+    // --- Pull Next Race from Ergast (just like game.index) ---
+    $season = date('Y');
+    $url = "https://api.jolpi.ca/ergast/f1/{$season}.json";
+    $response = Http::timeout(15)->get($url);
+
+    $nextRace = collect($response->json()['MRData']['RaceTable']['Races'] ?? [])
+        ->filter(fn($race) => \Carbon\Carbon::parse($race['date'])->isFuture())
+        ->sortBy('date')
+        ->first(); // get only the very next race
+
+    return view('dashboard', [
+        'drivers'       => $drivers,
+        'featuredRaces' => $featuredRaces,
+        'nextRace'      => $nextRace,
+    ]);
+}
+
     public function getFeaturedRaces()
     {
         $races = Race::orderBy('date')->get();
@@ -99,7 +110,7 @@ class HomeController extends Controller
             'Upcoming Race'
         );
 
-        // ✅ Only return featured races (no allRaces)
+       
         return array_filter([$previousRace, $nextRace, $upcomingRace]);
     }
 }

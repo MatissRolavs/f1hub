@@ -12,30 +12,38 @@ use Carbon\Carbon;
 
 class RaceGameController extends Controller
 {
-    // Show only upcoming races
+    
     public function index()
-{
-    $season = date('Y');
-    $url = "https://api.jolpi.ca/ergast/f1/{$season}.json";
-    $response = Http::timeout(15)->get($url);
+    {
+        $season = date('Y');
+        $url = "https://api.jolpi.ca/ergast/f1/{$season}.json";
+        $response = Http::timeout(15)->get($url);
+    
+        $races = collect($response->json()['MRData']['RaceTable']['Races'] ?? [])
+            ->filter(fn($race) => \Carbon\Carbon::parse($race['date'])->isFuture())
+            ->sortBy('date')
+            ->take(1)
+            ->values();
+    
+        // Fetch leaderboard data
+        $leaderboard = DB::table('game_scores')
+            ->select('player_name', DB::raw('SUM(score) as total_score'), DB::raw('COUNT(*) as races_played'))
+            ->groupBy('player_name')
+            ->orderByDesc('total_score')
+            ->get();
+    
+        return view('game.index', compact('races', 'leaderboard'));
+    }
+    
 
-    $races = collect($response->json()['MRData']['RaceTable']['Races'] ?? [])
-        ->filter(fn($race) => \Carbon\Carbon::parse($race['date'])->isFuture())
-        ->sortBy('date')
-        ->take(1) // ✅ only the next race
-        ->values();
 
-    return view('game.index', compact('races'));
-}
-
-
-    // Show prediction form for a future race
+   
     public function play(Request $request)
     {
         $season = $request->input('season');
         $round  = (int) $request->input('round');
     
-        // Get drivers from previous race results
+    
         $prevRound = $round > 1 ? $round - 1 : 1;
         $url = "https://api.jolpi.ca/ergast/f1/{$season}/{$prevRound}/results.json";
         $response = Http::timeout(15)->get($url);
@@ -77,7 +85,6 @@ class RaceGameController extends Controller
     }
     
 
-    // Store prediction for later scoring
     public function storePrediction(Request $request)
     {
         $positions = $request->input('positions', []);
@@ -106,7 +113,6 @@ class RaceGameController extends Controller
         return redirect()->route('game.index')->with('success', 'Prediction saved! You can change it until race day.');
     }
 
-    // Score predictions after race
     public function scoreRace($season, $round)
     {
         $url = "https://api.jolpi.ca/ergast/f1/{$season}/{$round}/results.json";
@@ -148,7 +154,6 @@ class RaceGameController extends Controller
 {
     $predictions = RacePrediction::where('user_id', Auth::id())->get();
 
-    // Attach race info from API
     $season = date('Y');
     $url = "https://api.jolpi.ca/ergast/f1/{$season}.json";
     $races = collect(Http::timeout(15)->get($url)->json()['MRData']['RaceTable']['Races'] ?? []);
@@ -157,6 +162,17 @@ class RaceGameController extends Controller
         $raceInfo = $races->firstWhere('round', $pred->round);
         $pred->raceName = $raceInfo['raceName'] ?? "{$pred->season} Round {$pred->round}";
         $pred->raceDate = $raceInfo['date'] ?? null;
+
+        // Convert driver IDs to names with positions
+        $order = json_decode($pred->predicted_order, true) ?? [];
+        $pred->formatted_order = collect($order)->map(function($driverId, $index) {
+            $driver = \App\Models\Driver::where('driver_id', $driverId)->first();
+            if ($driver) {
+                return ($index + 1) . '. ' . $driver->given_name . ' ' . $driver->family_name;
+            }
+            return ($index + 1) . '. ' . $driverId; // fallback if driver not found
+        })->toArray();
+
         return $pred;
     });
 
@@ -193,7 +209,6 @@ public function playPast(Request $request)
     $season = $request->input('season');
     $round  = (int) $request->input('round');
 
-    // Get drivers from that race's actual results (so list matches reality)
     $url = "https://api.jolpi.ca/ergast/f1/{$season}/{$round}/results.json";
     $response = Http::timeout(15)->get($url);
 
@@ -219,7 +234,7 @@ public function playPast(Request $request)
         'raceName' => $raceName,
         'season' => $season,
         'round' => $round,
-        'savedOrder' => [] // no saved predictions for past races in test mode
+        'savedOrder' => []
     ]);
 }
 public function leaderboard()

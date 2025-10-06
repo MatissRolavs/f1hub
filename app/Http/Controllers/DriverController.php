@@ -100,8 +100,8 @@ public function showStandings()
             'standings.position',
             'standings.points',
             'standings.wins',
-            'drivers.id as id', // primary key for show route
-            'drivers.driver_id', // Ergast-style ID if you use that
+            'drivers.id as id',
+            'drivers.driver_id', 
             'drivers.given_name',
             'drivers.family_name',
             'drivers.code',
@@ -120,7 +120,7 @@ public function showStandings()
 private function fetchAllDriverResults(string $driverCode): array
 {
     $allRaces = [];
-    $limit = 100;       // API page size ceiling
+    $limit = 100;       
     $offset = 0;
 
     while (true) {
@@ -131,7 +131,7 @@ private function fetchAllDriverResults(string $driverCode): array
         ]);
 
         if (!$response->successful()) {
-            break; // or throw if you prefer: abort(502, 'Failed to fetch results');
+            break; 
         }
 
         $json = $response->json()['MRData'] ?? [];
@@ -149,7 +149,7 @@ private function fetchAllDriverResults(string $driverCode): array
             break;
         }
 
-        // Gentle pacing to be nice to the API (tweak as needed)
+       
         usleep(150000); // 150ms
     }
 
@@ -160,25 +160,20 @@ public function showDriver(Driver $driver)
 {
     $driver->load(['latestStanding.constructor']);
 
-    // Compute and cache career stats to reduce API calls (optional)
-        $careerStats = Cache::remember("driver:{$driver->driver_id}:career", now()->addHours(6), function () use ($driver) {
-        $races = $this->fetchAllDriverResults($driver->driver_id); // full pagination
-
-        // Flatten to the primary classified result per race
+    // Career stats (already implemented)
+    $careerStats = Cache::remember("driver:{$driver->driver_id}:career", now()->addHours(6), function () use ($driver) {
+        $races = $this->fetchAllDriverResults($driver->driver_id); 
         $results = collect($races)->map(fn($race) => $race['Results'][0]);
 
-        // Helpers
         $isWin = fn($res) => isset($res['position']) && (int)$res['position'] === 1;
         $isPodium = fn($res) => isset($res['position']) && (int)$res['position'] <= 3;
         $isPole = fn($res) => isset($res['grid']) && (int)$res['grid'] === 1;
 
-        // Status classification: count as DNF if not Finished and not classified (+n Laps)
         $isDNF = function ($res) {
             $status = strtolower($res['status'] ?? '');
             if ($status === 'finished') return false;
-            // Classified but lapped finishes look like "+1 Lap", "+2 Laps"
             if (preg_match('/^\+?\d+\s+laps?$/i', $status)) return false;
-            return true; // Accident, Engine, Disqualified, Collision, etc.
+            return true; 
         };
 
         $points = $results->sum(fn($r) => (float)($r['points'] ?? 0));
@@ -187,7 +182,6 @@ public function showDriver(Driver $driver)
         $poles = $results->filter($isPole)->count();
         $dnfs = $results->filter($isDNF)->count();
 
-        // Optional: fastest laps if available in payload
         $fastestLaps = $results->filter(function ($r) {
             return isset($r['FastestLap']['rank']) && (string)$r['FastestLap']['rank'] === '1';
         })->count();
@@ -203,7 +197,30 @@ public function showDriver(Driver $driver)
         ];
     });
 
-    return view('drivers.show', compact('driver', 'careerStats'));
+    // --- NEW: Season stats from standings table ---
+    $currentSeason = now()->year;
+
+    $standing = \App\Models\Standing::where('driver_id', $driver->id)
+        ->where('season', $currentSeason)
+        ->orderByDesc('round')
+        ->first();
+
+    $seasonStats = [
+        'position'       => $standing->position ?? null,
+        'points'         => $standing->points ?? null,
+        'wins'           => $standing->wins ?? null,
+        'entries'        => $standing ? (int) $standing->round : null,
+        // If you want podiums, poles, fastest laps, sprints etc. you’ll need extra columns or logic.
+        'podiums'        => null,
+        'poles'          => null,
+        'fastest_laps'   => null,
+        'sprint_races'   => null,
+        'sprint_wins'    => null,
+        'sprint_podiums' => null,
+    ];
+
+    return view('drivers.show', compact('driver', 'careerStats', 'seasonStats'));
 }
+
 }
 ?>

@@ -55,28 +55,41 @@
                     <x-nav-link :href="route('game.index')" :active="request()->routeIs('game.index')" class="text-white audiowide-regular">
                         {{ __('PREDICTION GAME') }}
                     </x-nav-link>
-                    @if (Auth::user()->role == 'admin')
-                        <x-nav-link :href="route('admin.panel')" :active="request()->routeIs('admin.panel')" class="text-white audiowide-regular">
-                            {{ __('ADMIN') }}
-                        </x-nav-link>
-                    @endif
+                    @auth
+                        @if (Auth::user()->role == 'admin')
+                            <x-nav-link :href="route('admin.panel')" :active="request()->routeIs('admin.panel')" class="text-white audiowide-regular">
+                                {{ __('ADMIN') }}
+                            </x-nav-link>
+                        @endif
+                    @endauth
                 </div>
             </div>
 
-            <!-- Right side: Username + Logout -->
+            <!-- Right side: Authenticated OR Guest -->
             <div class="hidden sm:flex sm:items-center sm:ms-6 gap-4">
-                <!-- Username links directly to profile -->
-                <x-nav-link :href="route('profile.edit')" :active="request()->routeIs('profile.edit')" class="text-white audiowide-regular">
-                    {{ Auth::user()->name }}
-                </x-nav-link>
+                @auth
+                    <!-- Username links directly to profile -->
+                    <x-nav-link :href="route('profile.edit')" :active="request()->routeIs('profile.edit')" class="text-white audiowide-regular">
+                        {{ Auth::user()->name }}
+                    </x-nav-link>
 
-                <!-- Logout button -->
-                <form method="POST" action="{{ route('logout') }}">
-                    @csrf
-                    <button type="submit" class="text-red-500 hover:text-red-400 audiowide-regular">
-                        {{ __('Log Out') }}
-                    </button>
-                </form>
+                    <!-- Logout button -->
+                    <form method="POST" action="{{ route('logout') }}">
+                        @csrf
+                        <button type="submit" class="text-red-500 hover:text-red-400 audiowide-regular">
+                            {{ __('Log Out') }}
+                        </button>
+                    </form>
+                @endauth
+
+                @guest
+                    <x-nav-link :href="route('login')" :active="request()->routeIs('login')" class="text-white audiowide-regular">
+                        {{ __('Login') }}
+                    </x-nav-link>
+                    <x-nav-link :href="route('register')" :active="request()->routeIs('register')" class="text-white audiowide-regular">
+                        {{ __('Register') }}
+                    </x-nav-link>
+                @endguest
             </div>
 
             <!-- Hamburger -->
@@ -112,15 +125,22 @@
             <x-responsive-nav-link :href="route('game.index')" :active="request()->routeIs('game.index')" class="text-white audiowide-regular">
                 {{ __('PREDICTION GAME') }}
             </x-responsive-nav-link>
+            @auth
+                @if (Auth::user()->role == 'admin')
+                <x-responsive-nav-link :href="route('admin.panel')" :active="request()->routeIs('admin.panel')" class="text-white audiowide-regular">
+                    {{ __('ADMIN') }}
+                </x-responsive-nav-link>
+                @endif
+            @endauth
         </div>
 
         <!-- Responsive Settings Options -->
+        @auth
         <div class="pt-4 pb-1 border-t border-gray-700">
             <div class="px-4">
                 <x-nav-link :href="route('profile.edit')" :active="request()->routeIs('profile.edit')" class="text-white audiowide-regular">
                     {{ Auth::user()->name }}
                 </x-nav-link>
-
                 <div class="font-medium text-sm text-gray-300">{{ Auth::user()->email }}</div>
             </div>
 
@@ -135,5 +155,19 @@
                 </form>
             </div>
         </div>
+        @endauth
+
+        @guest
+        <div class="pt-4 pb-1 border-t border-gray-700">
+            <div class="px-4 flex flex-col gap-2">
+                <x-responsive-nav-link :href="route('login')" :active="request()->routeIs('login')" class="text-white audiowide-regular">
+                    {{ __('Login') }}
+                </x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('register')" :active="request()->routeIs('register')" class="text-white audiowide-regular">
+                    {{ __('Register') }}
+                </x-responsive-nav-link>
+            </div>
+        </div>
+        @endguest
     </div>
 </nav>
