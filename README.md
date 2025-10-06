@@ -67,6 +67,14 @@ Follow these steps to get F1Hub running on your local machine.
     DB_PASSWORD=secret
     ```
 
+    
+5. **Run database migration**
+
+    ```bash
+    php artisan migrate
+    ```
+
+    
 5. **Generate application key**
 
     ```bash
