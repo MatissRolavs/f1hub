@@ -1,61 +1,139 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# F1Hub 🏎️
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+A platform to explore Formula 1 data — drivers, teams, races, and results — built with Laravel & Vue (or your tech stack).  
 
-## About Laravel
+> *“Speed is what gets you to the finish line; design is what makes people want to watch you get there.”* — (just kidding, but good design helps!)  
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+---
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## 📘 Table of Contents
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+1. [Features](#features)  
+2. [Tech Stack](#tech-stack)  
+3. [Installation & Setup](#installation--setup)  
+4. [Usage](#usage)  
+5. [Configuration](#configuration)  
+6. [Database & Migrations](#database--migrations)  
+7. [Seeding / Sample Data](#seeding--sample-data)  
+8. [Running Tests](#running-tests)  
+9. [Deployment](#deployment)  
+10. [Contributing](#contributing)  
+11. [License](#license)  
 
-## Learning Laravel
+---
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+## ✨ Features
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+- Browse F1 drivers, teams, seasons, circuits, and results  
+- Search and filter by year / team / driver  
+- RESTful APIs for data access  
+- Admin dashboard (if included)  
+- Responsive, modern UI  
+- Clean architecture & modular code  
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+*(If there are features you’ve built that I missed, you should add them here.)*
 
-## Laravel Sponsors
+---
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+## 🧰 Tech Stack
 
-### Premium Partners
+Here’s what I see in the repo (please correct if wrong):
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+| Layer | Technology |
+| --- | --- |
+| Backend / Server | Laravel (PHP) |
+| Frontend / UI | Vue.js / Vite / Tailwind CSS |
+| Database | MySQL / MariaDB / SQLite |
+| Others | Laravel migrations, seeding, APIs, etc. |
 
-## Contributing
+---
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+## 🚀 Installation & Setup
 
-## Code of Conduct
+Follow these steps to get F1Hub running on your local machine.
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+1. **Clone the repository**
 
-## Security Vulnerabilities
+    ```bash
+    git clone https://github.com/MatissRolavs/f1hub.git
+    cd f1hub
+    ```
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+2. **Install dependencies**
 
-## License
+    ```bash
+    composer install
+    npm install
+    ```
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+3. **Copy environment file**
+
+    ```bash
+    cp .env.example .env
+    ```
+
+4. **Configure `.env`**
+
+    Set database credentials, app key, etc. For example:
+
+    ```text
+    APP_NAME=F1Hub
+    APP_ENV=local
+    APP_KEY=base64:...  
+    APP_URL=http://localhost
+    
+    DB_CONNECTION=mysql
+    DB_HOST=127.0.0.1
+    DB_PORT=3306
+    DB_DATABASE=f1hub
+    DB_USERNAME=root
+    DB_PASSWORD=secret
+    ```
+
+5. **Generate application key**
+
+    ```bash
+    php artisan key:generate
+    ```
+
+6. **Run migrations & seeders**
+
+    ```bash
+    php artisan migrate --seed
+    ```
+
+7. **Build frontend assets**
+
+    ```bash
+    npm run dev
+    ```
+
+8. **Start the server**
+
+    ```bash
+    php artisan serve
+    ```
+
+You should now be able to view the app at `http://localhost:8000`.
+
+---
+
+## 📦 Usage
+
+- Use the UI to navigate through drivers, teams, seasons, etc.  
+- Use the API endpoints (e.g. `/api/drivers`, `/api/teams`) to fetch data programmatically.  
+- Integrate with a mobile app or third-party service if needed.  
+
+*(Add example requests/responses if you have them.)*
+
+---
+
+## ⚙️ Configuration
+
+If your app supports configuration (filters, external APIs, etc.), document them here.  
+
+For example:
+
+```text
+API_RATE_LIMIT=100
+EXTERNAL_API_KEY=your_key_here
