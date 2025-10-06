@@ -1,50 +1,27 @@
 # F1Hub 🏎️
 
-A platform to explore Formula 1 data — drivers, teams, races, and results — built with Laravel & Vue (or your tech stack).  
-
-> *“Speed is what gets you to the finish line; design is what makes people want to watch you get there.”* — (just kidding, but good design helps!)  
-
----
-
-## 📘 Table of Contents
-
-1. [Features](#features)  
-2. [Tech Stack](#tech-stack)  
-3. [Installation & Setup](#installation--setup)  
-4. [Usage](#usage)  
-5. [Configuration](#configuration)  
-6. [Database & Migrations](#database--migrations)  
-7. [Seeding / Sample Data](#seeding--sample-data)  
-8. [Running Tests](#running-tests)  
-9. [Deployment](#deployment)  
-10. [Contributing](#contributing)  
-11. [License](#license)  
+A platform to explore Formula 1 data - drivers, teams, races, and results, built with Laravel, Tailwind, AnimeJS and JolpicaF1API.  
 
 ---
 
 ## ✨ Features
 
-- Browse F1 drivers, teams, seasons, circuits, and results  
-- Search and filter by year / team / driver  
-- RESTful APIs for data access  
-- Admin dashboard (if included)  
+- Browse F1 drivers, teams, seasons, circuits, and results   
+- RESTful API for data access  
+- Admin dashboard  
 - Responsive, modern UI  
 - Clean architecture & modular code  
-
-*(If there are features you’ve built that I missed, you should add them here.)*
+- Next race results prediction game
+- Forum for each race to discuss previous events or talk about upcoming ones
 
 ---
 
 ## 🧰 Tech Stack
 
-Here’s what I see in the repo (please correct if wrong):
-
-| Layer | Technology |
-| --- | --- |
 | Backend / Server | Laravel (PHP) |
 | Frontend / UI | Vue.js / Vite / Tailwind CSS |
-| Database | MySQL / MariaDB / SQLite |
-| Others | Laravel migrations, seeding, APIs, etc. |
+| Database | MySQL |
+| API | JolpicaF1API |
 
 ---
 
@@ -96,19 +73,14 @@ Follow these steps to get F1Hub running on your local machine.
     php artisan key:generate
     ```
 
-6. **Run migrations & seeders**
 
-    ```bash
-    php artisan migrate --seed
-    ```
-
-7. **Build frontend assets**
+6. **Build frontend assets**
 
     ```bash
     npm run dev
     ```
 
-8. **Start the server**
+7. **Start the server**
 
     ```bash
     php artisan serve
@@ -116,24 +88,3 @@ Follow these steps to get F1Hub running on your local machine.
 
 You should now be able to view the app at `http://localhost:8000`.
 
----
-
-## 📦 Usage
-
-- Use the UI to navigate through drivers, teams, seasons, etc.  
-- Use the API endpoints (e.g. `/api/drivers`, `/api/teams`) to fetch data programmatically.  
-- Integrate with a mobile app or third-party service if needed.  
-
-*(Add example requests/responses if you have them.)*
-
----
-
-## ⚙️ Configuration
-
-If your app supports configuration (filters, external APIs, etc.), document them here.  
-
-For example:
-
-```text
-API_RATE_LIMIT=100
-EXTERNAL_API_KEY=your_key_here
