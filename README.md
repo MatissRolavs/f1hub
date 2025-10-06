@@ -13,6 +13,7 @@ A platform to explore Formula 1 data - drivers, teams, races, and results, built
 - Clean architecture & modular code  
 - Next race results prediction game
 - Forum for each race to discuss previous events or talk about upcoming ones
+- User authentification
 
 ---
 
