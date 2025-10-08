@@ -16,6 +16,7 @@ Route::get('/', function () {
 Route::get('/dashboard', [HomeController::class, 'index'])->name('dashboard');
 
 Route::get('/drivers', [DriverController::class, 'index'])->name('drivers.index');
+Route::get('/drivers/sync', [DriverController::class, 'syncStandings'])->name('drivers.sync');
 Route::get('/drivers/{driver}', [DriverController::class, 'showDriver'])->name('drivers.show');
 Route::get('/standings', [DriverController::class, 'showStandings'])->name('standings.index');
 
@@ -34,7 +35,7 @@ Route::middleware('auth')->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
-    Route::get('/drivers/sync', [DriverController::class, 'syncStandings'])->name('drivers.sync');
+    
     
     Route::get('/races/sync', [RaceController::class, 'currentSeasonRaces'])->name('races.sync');
     Route::get('/results/sync', [RaceController::class, 'syncSeasonRaceResults'])->name('results.index');
