@@ -3,7 +3,6 @@
 
     <!-- Driver Header -->
     <div class="bg-[#1a1a1a] rounded-xl shadow-lg overflow-hidden flex flex-col md:flex-row items-center md:items-stretch">
-        <!-- Left: Driver Info -->
         <div class="flex-1 p-6 flex flex-col justify-center">
             <h2 class="text-4xl font-bold mb-4">
                 {{ $driver->given_name }} {{ $driver->family_name }}
@@ -13,7 +12,6 @@
             <p class="text-lg"><strong>Team:</strong> {{ $driver->latestStanding->constructor->name ?? '—' }}</p>
         </div>
 
-        <!-- Right: Driver Image -->
         <div class="md:w-1/2">
             <img
                 src="https://media.formula1.com/image/upload/f_webp,c_limit,q_50,w_640/content/dam/fom-website/drivers/2025Drivers/{{ $driver->family_name }}"
@@ -26,7 +24,6 @@
 
     <!-- Stats Section -->
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8">
-        <!-- Current Season Stats -->
         <div class="bg-[#1a1a1a] rounded-xl shadow-lg p-6">
             <h3 class="text-2xl font-bold mb-4">Current Season</h3>
             <ul class="space-y-2 text-gray-300">
@@ -37,7 +34,6 @@
             </ul>
         </div>
 
-        <!-- Career Stats -->
         <div class="bg-[#1a1a1a] rounded-xl shadow-lg p-6">
             <h3 class="text-2xl font-bold mb-4">Career Stats</h3>
             <ul class="space-y-2 text-gray-300">
@@ -52,5 +48,17 @@
         </div>
     </div>
 
+    <!-- Compare Section -->
+    <div class="mt-10 text-center">
+        <h3 class="text-xl font-bold mb-4">Compare Stats</h3>
+
+        <div class="flex flex-col md:flex-row justify-center gap-4">
+            <!-- Compare with previous season -->
+            <a href="{{ route('drivers.compare', ['driver' => $driver->id, 'type' => 'season', 'season_a' => date('Y'), 'season_b' => date('Y') - 1]) }}"
+            class="px-6 py-3 bg-gray-800 rounded-lg shadow hover:bg-gray-700 transition">
+            Compare with Previous Season
+            </a>
+    </div>
+</div>
 </div>
 </x-app-layout>
