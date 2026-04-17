@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Http\Request;
 use App\Services\JolpicaF1Service;
 use App\Models\Driver;
 use App\Models\Constructor;
@@ -15,72 +16,113 @@ use Carbon\Carbon;
 
 class RaceController extends Controller
 {
+    protected $f1Service;
+
+    public function __construct(JolpicaF1Service $f1Service)
+    {
+        $this->f1Service = $f1Service;
+    }
     
 
     public function currentSeasonRaces()
-    {   
+    {
         if (Auth::user()->role !== 'admin') {
             abort(403, 'Unauthorized');
         }
-        else{
-        // Fetch races from Ergast API
-        $response = Http::get("https://api.jolpi.ca/ergast/f1/current.json");
-        if ($response->failed()) {
-            abort(500, 'Unable to fetch race data');
-        }
 
-        $data = $response->json();
-        $races = $data['MRData']['RaceTable']['Races'] ?? [];
+        set_time_limit(0);
 
-        // Sort by date ascending
-        usort($races, fn($a, $b) => strtotime($a['date']) <=> strtotime($b['date']));
+        $seasons = $this->f1Service->getSeasons();
+        $currentSeason = (string) now()->year;
 
-        // Store/update races in DB
-        foreach ($races as $race) {
-            // Convert ISO 8601 time (with Z) to MySQL TIME format
-            $time = null;
-            if (!empty($race['time'])) {
-                $time = Carbon::parse($race['date'] . 'T' . $race['time'])->toTimeString();
+        // Past seasons already in the DB are treated as complete — skip.
+        // Current season is always re-fetched so schedule changes + new rounds come through.
+        $syncedSeasons = Race::query()
+            ->select('season')
+            ->distinct()
+            ->pluck('season')
+            ->map(fn($s) => (string) $s)
+            ->all();
+
+        $seasonsProcessed = 0;
+        $seasonsSkipped   = 0;
+        $totalInserted    = 0;
+        $totalPruned      = 0;
+
+        foreach ($seasons as $year) {
+            $year = (string) $year;
+
+            if ($year !== $currentSeason && in_array($year, $syncedSeasons, true)) {
+                $seasonsSkipped++;
+                continue;
             }
 
-            Race::updateOrCreate(
-                [
-                    'season' => $data['MRData']['RaceTable']['season'],
-                    'round'  => $race['round']
-                ],
-                [
-                    'name'         => $race['raceName'],
-                    'date'         => $race['date'],
-                    'time'         => $time,
-                    'circuit_name' => $race['Circuit']['circuitName'],
-                    'locality'     => $race['Circuit']['Location']['locality'],
-                    'country'      => $race['Circuit']['Location']['country'],
-                    'url'          => $race['url'] ?? null
-                ]
-            );
+            $response = Http::get("https://api.jolpi.ca/ergast/f1/{$year}.json");
+            if ($response->failed()) {
+                \Log::error("Failed to fetch races for {$year}");
+                continue;
+            }
+
+            $races = $response->json()['MRData']['RaceTable']['Races'] ?? [];
+            if (empty($races)) {
+                continue;
+            }
+
+            $apiRounds = [];
+            foreach ($races as $race) {
+                $apiRounds[] = (int) $race['round'];
+
+                $time = null;
+                if (!empty($race['time'])) {
+                    $time = Carbon::parse($race['date'] . 'T' . $race['time'])->toTimeString();
+                }
+
+                $record = Race::updateOrCreate(
+                    [
+                        'season' => $year,
+                        'round'  => $race['round'],
+                    ],
+                    [
+                        'name'         => $race['raceName'],
+                        'date'         => $race['date'],
+                        'time'         => $time,
+                        'circuit_name' => $race['Circuit']['circuitName'] ?? null,
+                        'locality'     => $race['Circuit']['Location']['locality'] ?? null,
+                        'country'      => $race['Circuit']['Location']['country'] ?? null,
+                        'url'          => $race['url'] ?? null,
+                    ]
+                );
+
+                if ($record->wasRecentlyCreated) {
+                    $totalInserted++;
+                }
+            }
+
+            // Prune rounds the API no longer exposes for this season.
+            $totalPruned += Race::where('season', $year)
+                ->whereNotIn('round', $apiRounds)
+                ->delete();
+
+            $seasonsProcessed++;
         }
 
-        //  Find the first upcoming race index
-        $today = Carbon::today();
-        $startIndex = 0;
-        foreach ($races as $i => $race) {
-            $raceDate = Carbon::parse($race['date']);
-            if ($raceDate->isToday() || $raceDate->isFuture()) {
-                $startIndex = $i;
-                break;
-            }
-            if ($i === count($races) - 1) {
-                $startIndex = max(count($races) - 1, 0);
-            }
+        $msg = "Races sync complete. Processed {$seasonsProcessed} season(s), skipped {$seasonsSkipped} already-saved. Inserted {$totalInserted} new race(s).";
+        if ($totalPruned > 0) {
+            $msg .= " Removed {$totalPruned} orphaned round(s).";
         }
-
-        // Pass data to view
-        return redirect()->back()->with('success', 'Current season races have been updated.');
+        return redirect()->back()->with('success', $msg);
     }
-    }
-    public function showRacesFromDb()
+    public function showRacesFromDb(Request $request)
     {
-        $races = Race::orderBy('date')->get();
+        // Get available seasons
+        $seasons = $this->f1Service->getSeasons();
+
+        // Get selected season or default to current
+        $selectedSeason = $request->get('season', $this->f1Service->getCurrentSeason());
+
+        // Get races for the selected season (admins populate the DB via the
+        // "Sync Current Season Races" button; no lazy loading here).
+        $races = Race::where('season', $selectedSeason)->orderBy('date')->get();
 
         $f1Images = [
             'https://running-riversport.com/wp-content/uploads/2022/09/4-Best-F1-tracks.jpg',
@@ -156,115 +198,131 @@ class RaceController extends Controller
         return view('races.index', [
             'featuredRaces' => array_filter([$previousRace, $nextRace, $upcomingRace]),
             'allRaces'      => $allRaces,
+            'seasons'       => $seasons,
+            'selectedSeason' => $selectedSeason,
         ]);
     }
 
-public function syncSeasonRaceResults($year = 2025)
-{   
+public function syncSeasonRaceResults()
+{
     if (Auth::user()->role !== 'admin') {
         abort(403, 'Unauthorized');
     }
-    else{
-    $limit = 100;
-    $offset = 0;
-    $allRaces = [];
 
-    \Log::info("=== Starting race results sync for {$year} ===");
+    set_time_limit(0);
 
-    do {
-        $url = "https://api.jolpi.ca/ergast/f1/{$year}/results.json";
-        $response = Http::get($url, [
-            'limit' => $limit,
-            'offset' => $offset
-        ]);
+    $seasons = $this->f1Service->getSeasons();
 
-        if ($response->failed()) {
-            \Log::error("API request failed at offset {$offset}");
-            return redirect()->back()->with('error', 'Unable to fetch race results.');
+    $totalInserted = 0;
+    $seasonsProcessed = 0;
+
+    \Log::info("=== Starting race results sync across all seasons ===");
+
+    foreach ($seasons as $year) {
+        $year = (string) $year;
+
+        \Log::info("Syncing race results for {$year}");
+
+        $limit = 100;
+        $offset = 0;
+        $allRaces = [];
+        $total = 0;
+
+        do {
+            $response = Http::get("https://api.jolpi.ca/ergast/f1/{$year}/results.json", [
+                'limit'  => $limit,
+                'offset' => $offset,
+            ]);
+
+            if ($response->failed()) {
+                \Log::error("API request failed for {$year} at offset {$offset}");
+                break;
+            }
+
+            $data  = $response->json();
+            $total = (int) ($data['MRData']['total'] ?? 0);
+            $races = $data['MRData']['RaceTable']['Races'] ?? [];
+
+            if (empty($races)) break;
+
+            $allRaces = array_merge($allRaces, $races);
+            $offset  += $limit;
+        } while (count($allRaces) < $total);
+
+        if (empty($allRaces)) {
+            continue;
         }
 
-        $data = $response->json();
-        $total = (int) ($data['MRData']['total'] ?? 0);
-        $races = $data['MRData']['RaceTable']['Races'] ?? [];
+        foreach ($allRaces as $race) {
+            foreach ($race['Results'] as $result) {
+                try {
+                    $driverData      = $result['Driver'];
+                    $constructorData = $result['Constructor'];
 
-        if (empty($races)) break;
+                    $driver = Driver::updateOrCreate(
+                        ['driver_id' => $driverData['driverId']],
+                        [
+                            'code'             => $driverData['code'] ?? null,
+                            'permanent_number' => $driverData['permanentNumber'] ?? null,
+                            'given_name'       => $driverData['givenName'],
+                            'family_name'      => $driverData['familyName'],
+                            'date_of_birth'    => $driverData['dateOfBirth'] ?? null,
+                            'nationality'      => $driverData['nationality'] ?? null,
+                            'url'              => $driverData['url'] ?? null,
+                        ]
+                    );
 
-        $allRaces = array_merge($allRaces, $races);
-        $offset += $limit;
+                    $constructor = Constructor::updateOrCreate(
+                        ['constructor_id' => $constructorData['constructorId']],
+                        [
+                            'name'        => $constructorData['name'],
+                            'nationality' => $constructorData['nationality'] ?? null,
+                            'url'         => $constructorData['url'] ?? null,
+                        ]
+                    );
 
-    } while (count($allRaces) < $total);
+                    $raceResult = Race_result::firstOrCreate(
+                        [
+                            'season'    => $race['season'],
+                            'round'     => $race['round'],
+                            'driver_id' => $driver->id,
+                        ],
+                        [
+                            'constructor_id'     => $constructor->id,
+                            'race_name'          => $race['raceName'],
+                            'date'               => $race['date'] ?? null,
+                            'time'               => !empty($race['time']) ? Carbon::parse($race['date'] . 'T' . $race['time'])->toTimeString() : null,
+                            'grid'               => $result['grid'] ?? null,
+                            'position'           => is_numeric($result['position'] ?? null) ? (int) $result['position'] : null,
+                            'position_text'      => $result['positionText'] ?? null,
+                            'points'             => $result['points'] ?? 0,
+                            'laps'               => $result['laps'] ?? 0,
+                            'status'             => $result['status'] ?? null,
+                            'race_time'          => $result['Time']['time'] ?? null,
+                            'fastest_lap_time'   => $result['FastestLap']['Time']['time'] ?? null,
+                            'fastest_lap_rank'   => $result['FastestLap']['rank'] ?? null,
+                            'fastest_lap_speed'  => $result['FastestLap']['AverageSpeed']['speed'] ?? null,
+                        ]
+                    );
 
-    if (empty($allRaces)) {
-        return redirect()->back()->with('error', 'No race results found for this season.');
-    }
+                    if ($raceResult->wasRecentlyCreated) {
+                        $totalInserted++;
+                    }
+                } catch (\Exception $e) {
+                    \Log::error("Insert failed for {$race['raceName']}: " . $e->getMessage());
+                }
+            }
 
-    Race_result::where('season', $year)->delete();
-
-    $insertCount = 0;
-
-    foreach ($allRaces as $race) {
-        foreach ($race['Results'] as $result) {
-            try {
-                $driverData = $result['Driver'];
-                $constructorData = $result['Constructor'];
-
-                $driver = Driver::updateOrCreate(
-                    ['driver_id' => $driverData['driverId']],
-                    [
-                        'code' => $driverData['code'] ?? null,
-                        'permanent_number' => $driverData['permanentNumber'] ?? null,
-                        'given_name' => $driverData['givenName'],
-                        'family_name' => $driverData['familyName'],
-                        'date_of_birth' => $driverData['dateOfBirth'],
-                        'nationality' => $driverData['nationality'],
-                        'url' => $driverData['url'] ?? null,
-                    ]
-                );
-
-                $constructor = Constructor::updateOrCreate(
-                    ['constructor_id' => $constructorData['constructorId']],
-                    [
-                        'name' => $constructorData['name'],
-                        'nationality' => $constructorData['nationality'],
-                        'url' => $constructorData['url'] ?? null,
-                    ]
-                );
-
-                Race_result::create([
-                    'season' => $race['season'],
-                    'round' => $race['round'],
-                    'race_name' => $race['raceName'],
-                    'date' => $race['date'],
-                    'time' => !empty($race['time']) ? Carbon::parse($race['date'] . 'T' . $race['time'])->toTimeString() : null,
-                    'driver_id' => $driver->id,
-                    'constructor_id' => $constructor->id,
-                    'grid' => $result['grid'],
-                    'position' => is_numeric($result['position']) ? (int)$result['position'] : null,
-                    'position_text' => $result['positionText'],
-                    'points' => $result['points'],
-                    'laps' => $result['laps'],
-                    'status' => $result['status'],
-                    'race_time' => $result['Time']['time'] ?? null,
-                    'fastest_lap_time' => $result['FastestLap']['Time']['time'] ?? null,
-                    'fastest_lap_rank' => $result['FastestLap']['rank'] ?? null,
-                    'fastest_lap_speed' => $result['FastestLap']['AverageSpeed']['speed'] ?? null,
-                ]);
-
-                $insertCount++;
-            } catch (\Exception $e) {
-                \Log::error("Insert failed for {$race['raceName']} - {$driverData['givenName']} {$driverData['familyName']}: " . $e->getMessage());
+            if (!empty($race['date']) && Carbon::parse($race['date'])->isPast()) {
+                $this->scorePredictionsForRace($race['season'], $race['round'], $race['raceName']);
             }
         }
 
-        if (!empty($race['date']) && \Carbon\Carbon::parse($race['date'])->isPast()) {
-            $this->scorePredictionsForRace($race['season'], $race['round'], $race['raceName']);
-        } else {
-            \Log::info("Skipping scoring for {$race['raceName']} — race date is in the future.");
-        }
+        $seasonsProcessed++;
     }
 
-    return redirect()->back()->with('success', "Race results for {$year} synced successfully. Inserted {$insertCount} entries and scored past races.");
-}
+    $msg = "Sync complete. Processed {$seasonsProcessed} season(s). Inserted {$totalInserted} new result rows (existing rows skipped).";
+    return redirect()->back()->with('success', $msg);
 }
 protected function scorePredictionsForRace($season, $round, $raceName)
 {

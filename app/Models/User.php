@@ -22,7 +22,19 @@ class User extends Authenticatable
         'email',
         'password',
         'role',
+        'favorite_constructor_id',
+        'favorite_driver_id',
     ];
+
+    public function favoriteConstructor()
+    {
+        return $this->belongsTo(Constructor::class, 'favorite_constructor_id');
+    }
+
+    public function favoriteDriver()
+    {
+        return $this->belongsTo(Driver::class, 'favorite_driver_id');
+    }
 
     /**
      * The attributes that should be hidden for serialization.

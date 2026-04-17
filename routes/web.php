@@ -25,7 +25,7 @@ Route::get('/drivers/{driver}/compare', [DriverController::class, 'compareDriver
 Route::get('/races/{season}/{round}', [RaceController::class, 'raceShow'])->name('races.show');
 Route::get('/races', [RaceController::class, 'showRacesFromDb'])->name('races.index');
 
-Route::get('/standings/constructors/{season}', [ConstructorController::class, 'constructorsStandings'])->name('standings.constructors');
+Route::get('/standings/constructors/{season?}', [ConstructorController::class, 'constructorsStandings'])->name('standings.constructors');
 
 Route::get('/forums', [ForumController::class, 'index'])->name('forums.index');
 Route::get('/forums/{race}', [ForumController::class, 'show'])->name('forums.show');

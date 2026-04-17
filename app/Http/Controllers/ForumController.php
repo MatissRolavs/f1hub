@@ -6,20 +6,32 @@ use App\Models\Race;
 use App\Models\ForumPost;
 use App\Models\Comment;
 use App\Models\Like;
+use App\Services\JolpicaF1Service;
 use Illuminate\Http\Request;
 
 class ForumController extends Controller
 {
+    protected $f1Service;
+
+    public function __construct(JolpicaF1Service $f1Service)
+    {
+        $this->f1Service = $f1Service;
+    }
+
     public function index(Request $request)
     {
         $sort = $request->get('sort', 'latest');
         $search = $request->get('search');
-    
+        $season = $request->get('season');
+
         $races = \App\Models\Race::withCount('forumPosts')
             ->when($search, function ($query, $search) {
                 $query->where('name', 'like', "%{$search}%");
+            })
+            ->when($season, function ($query, $season) {
+                $query->where('season', $season);
             });
-    
+
         switch ($sort) {
             case 'oldest':
                 $races->orderBy('date', 'asc');
@@ -35,18 +47,24 @@ class ForumController extends Controller
                 $races->orderBy('date', 'desc');
                 break;
         }
-    
+
         $races = $races->get();
-    
+
+        // Full season list from Jolpica (cached). Seasons without races in the DB
+        // will simply show an empty result until /races loads them on demand.
+        $seasons = $this->f1Service->getSeasons();
+
         // === Forum Stats ===
-        $totalPosts = \App\Models\ForumPost::count();   
-        $thanksLeft = \App\Models\Like::count();    
-        $totalRaces = \App\Models\Race::count();   
-        
+        $totalPosts = \App\Models\ForumPost::count();
+        $thanksLeft = \App\Models\Like::count();
+        $totalRaces = \App\Models\Race::count();
+
         return view('forums.index', compact(
             'races',
             'sort',
             'search',
+            'season',
+            'seasons',
             'totalPosts',
             'thanksLeft',
             'totalRaces',
@@ -61,7 +79,8 @@ public function show($raceId, Request $request)
     $sort = $request->get('sort', 'latest');
     $search = $request->get('search');
 
-    $posts = ForumPost::withCount('comments')
+    $posts = ForumPost::withCount(['comments', 'likes'])
+        ->with(['user.favoriteConstructor', 'user.favoriteDriver'])
         ->where('race_id', $race->id)
         ->when($search, function ($query, $search) {
             $query->where('title', 'like', "%{$search}%")
@@ -110,7 +129,12 @@ public function show($raceId, Request $request)
     }
     public function showPost($postId)
 {
-    $post = ForumPost::with(['user', 'comments.user', 'likes'])->findOrFail($postId);
+    $post = ForumPost::with([
+        'race',
+        'user.favoriteConstructor', 'user.favoriteDriver',
+        'comments.user.favoriteConstructor', 'comments.user.favoriteDriver',
+        'likes',
+    ])->findOrFail($postId);
     return view('forums.post-show', compact('post'));
 }
 

@@ -16,8 +16,12 @@ class Standing extends Model
         'wins',
     ];
     public function constructor()
-{
-    return $this->belongsTo(Constructor::class);
-}
+    {
+        return $this->belongsTo(Constructor::class);
+    }
 
+    public function driver()
+    {
+        return $this->belongsTo(Driver::class);
+    }
 }

@@ -9,9 +9,16 @@ use App\Models\Driver;
 use App\Models\Constructor;
 use App\Models\Standing;
 use Illuminate\Support\Facades\Auth;
+use App\Services\JolpicaF1Service;
 
 class DriverController extends Controller
 {
+    protected $f1Service;
+
+    public function __construct(JolpicaF1Service $f1Service)
+    {
+        $this->f1Service = $f1Service;
+    }
     public function syncStandings($year = 2025)
     {
         if (Auth::user()->role !== 'admin') abort(403, 'Unauthorized');
@@ -71,10 +78,152 @@ class DriverController extends Controller
         return redirect()->back()->with('success', "Standings for {$season} synced successfully.");
     }
 
-    public function index()
+    public function showStandings(Request $request)
     {
-        $drivers = Driver::with(['latestStanding.constructor'])->get();
-        return view('drivers.index2', compact('drivers'));
+        // Get available seasons
+        $seasons = $this->f1Service->getSeasons();
+
+        // Get selected season or default to current
+        $selectedSeason = $request->get('season', $this->f1Service->getCurrentSeason());
+
+        // Check if we need to sync and redirect with loading message
+        $needsSync = !Standing::where('season', $selectedSeason)->exists();
+
+        if ($needsSync && $request->has('season')) {
+            // Sync standings for the selected season
+            $this->syncStandingsIfNeeded($selectedSeason);
+
+            // Redirect back to the same page to ensure fresh data load
+            return redirect()->route('standings.index', ['season' => $selectedSeason])
+                ->with('success', "Loading {$selectedSeason} season standings...");
+        }
+
+        // Sync if needed (for initial page load without season parameter)
+        $this->syncStandingsIfNeeded($selectedSeason);
+
+        // Get standings for the selected season
+        $standings = \DB::table('standings')
+            ->join('drivers', 'standings.driver_id', '=', 'drivers.id')
+            ->join('constructors', 'standings.constructor_id', '=', 'constructors.id')
+            ->select(
+                'standings.*',
+                'drivers.id as driver_id',
+                'drivers.given_name',
+                'drivers.family_name',
+                'drivers.code',
+                'drivers.nationality as driver_nationality',
+                'constructors.name as constructor_name'
+            )
+            ->where('standings.season', $selectedSeason)
+            ->where('standings.position', '>', 0)
+            ->orderBy('standings.position')
+            ->get();
+
+        return view('standings.index', [
+            'standings' => $standings,
+            'season' => $selectedSeason,
+            'seasons' => $seasons,
+            'selectedSeason' => $selectedSeason,
+        ]);
+    }
+
+    public function index(Request $request)
+    {
+        // Get available seasons
+        $seasons = $this->f1Service->getSeasons();
+
+        // Get selected season or default to current
+        $selectedSeason = $request->get('season', $this->f1Service->getCurrentSeason());
+
+        // Check if we need to sync and redirect with loading message
+        $needsSync = !Standing::where('season', $selectedSeason)->exists();
+
+        if ($needsSync && $request->has('season')) {
+            // Sync standings for the selected season
+            $this->syncStandingsIfNeeded($selectedSeason);
+
+            // Redirect back to the same page to ensure fresh data load
+            return redirect()->route('drivers.index', ['season' => $selectedSeason])
+                ->with('success', "Loading {$selectedSeason} season data...");
+        }
+
+        // Sync if needed (for initial page load without season parameter)
+        $this->syncStandingsIfNeeded($selectedSeason);
+
+        // Get drivers with standings for the selected season
+        $drivers = Driver::whereHas('standings', function($query) use ($selectedSeason) {
+            $query->where('season', $selectedSeason)
+                  ->where('position', '>', 0);
+        })
+        ->with(['standings' => function($query) use ($selectedSeason) {
+            $query->where('season', $selectedSeason)
+                  ->where('position', '>', 0)
+                  ->orderByDesc('round')
+                  ->limit(1);
+        }, 'standings.constructor'])
+        ->get()
+        ->sortBy(function($driver) {
+            return $driver->standings->first()->position ?? 999;
+        });
+
+        return view('drivers.index2', compact('drivers', 'seasons', 'selectedSeason'));
+    }
+
+    private function syncStandingsIfNeeded($season)
+    {
+        // Check if we have standings for this season
+        $hasStandings = Standing::where('season', $season)->exists();
+
+        if (!$hasStandings) {
+            // Fetch from API
+            $standingsData = $this->f1Service->getDriverStandings($season);
+
+            if ($standingsData) {
+                $driverStandings = $standingsData['DriverStandings'] ?? [];
+                $round = $standingsData['round'];
+
+                foreach ($driverStandings as $entry) {
+                    $driverData = $entry['Driver'];
+                    $constructorData = $entry['Constructors'][0];
+
+                    $driver = Driver::updateOrCreate(
+                        ['driver_id' => $driverData['driverId']],
+                        [
+                            'code' => $driverData['code'] ?? null,
+                            'permanent_number' => $driverData['permanentNumber'] ?? null,
+                            'given_name' => $driverData['givenName'],
+                            'family_name' => $driverData['familyName'],
+                            'date_of_birth' => $driverData['dateOfBirth'] ?? null,
+                            'nationality' => $driverData['nationality'],
+                            'url' => $driverData['url'] ?? null,
+                        ]
+                    );
+
+                    $constructor = Constructor::updateOrCreate(
+                        ['constructor_id' => $constructorData['constructorId']],
+                        [
+                            'name' => $constructorData['name'],
+                            'nationality' => $constructorData['nationality'],
+                            'url' => $constructorData['url'] ?? null,
+                        ]
+                    );
+
+                    Standing::updateOrCreate(
+                        [
+                            'driver_id' => $driver->id,
+                            'season' => $season,
+                            'round' => $round,
+                        ],
+                        [
+                            'constructor_id' => $constructor->id,
+                            'position' => $entry['position'] ?? 0,
+                            'points' => $entry['points'] ?? 0,
+                            'wins' => $entry['wins'] ?? 0,
+                        ]
+                    );
+                }
+            }
+        }
     }
 
     /**

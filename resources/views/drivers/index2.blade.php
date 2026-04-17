@@ -1,212 +1,213 @@
 <x-app-layout>
-    <!-- Full-width banner -->
-    <div class="relative w-full h-[40rem] overflow-hidden">
-        <img src="{{ asset('images/racetrack.jpg') }}" 
-             alt="Racetrack Banner" 
-             class="absolute inset-0 w-full h-full object-cover">
-        <div class="absolute inset-0 bg-black/40 flex flex-col justify-center items-center text-center text-white">
-            <h2 class="text-5xl font-bold audiowide-regular mb-4">
-                CURRENT SEASON F1 DRIVERS
-            </h2>
-            <p class="max-w-2xl text-lg mb-[18rem]">
-                Explore the grid of the 2025 Formula 1 season.
+<style>
+    /* ── Scroll reveal ───────────────────────────────────── */
+    .reveal, .reveal-scale {
+        opacity: 0;
+        transition: opacity 0.9s cubic-bezier(.2,.65,.3,1), transform 0.9s cubic-bezier(.2,.65,.3,1);
+        will-change: opacity, transform;
+    }
+    .reveal       { transform: translateY(40px); }
+    .reveal-scale { transform: scale(0.96); }
+    .is-visible   { opacity: 1 !important; transform: none !important; }
+
+    /* ── Section title with red accent ───────────────────── */
+    .section-title {
+        position: relative;
+        padding-left: 1.25rem;
+        display: inline-block;
+    }
+    .section-title::before {
+        content: "";
+        position: absolute;
+        left: 0;
+        top: 8%;
+        bottom: 8%;
+        width: 6px;
+        background: #e10600;
+        box-shadow: 0 0 12px rgba(225,6,0,0.6);
+    }
+
+    /* ── Hero ─────────────────────────────────────────────── */
+    .drivers-hero {
+        position: relative;
+        width: 100%;
+        height: 44rem;
+        overflow: hidden;
+    }
+    .drivers-hero-overlay {
+        position: absolute; inset: 0;
+        background:
+            radial-gradient(ellipse at 50% 30%, rgba(225,6,0,0.35) 0%, transparent 55%),
+            linear-gradient(to bottom, rgba(10,10,15,0.45) 0%, rgba(10,10,15,0.85) 100%);
+    }
+    .drivers-hero::before {
+        content: "";
+        position: absolute; inset: 0;
+        background-image: repeating-linear-gradient(
+            45deg,
+            rgba(255,255,255,0.025) 0 14px,
+            transparent 14px 28px
+        );
+        pointer-events: none;
+        z-index: 1;
+    }
+    .hero-stripe {
+        position: absolute; left: 0;
+        height: 4px; width: 100%;
+        background: linear-gradient(90deg, #e10600 0%, #e10600 55%, transparent 100%);
+        box-shadow: 0 0 20px rgba(225,6,0,0.8);
+        z-index: 3;
+    }
+    .hero-stripe.top    { top: 0; }
+    .hero-stripe.bottom { bottom: 0; background: linear-gradient(270deg, #e10600 0%, #e10600 55%, transparent 100%); }
+
+    .drivers-hero h2 {
+        letter-spacing: 4px;
+        text-shadow: 0 0 30px rgba(225,6,0,0.35);
+    }
+    .drivers-hero h2 .accent {
+        color: #e10600;
+        text-shadow: 0 0 20px rgba(225,6,0,0.8);
+    }
+
+    /* ── Card red glow on hover ──────────────────────────── */
+    .f1-card {
+        transition: transform 0.35s ease, box-shadow 0.35s ease;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+    }
+    .f1-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 0 35px rgba(225,6,0,0.5), 0 10px 30px rgba(0,0,0,0.6);
+    }
+
+    /* ── Season selector ─────────────────────────────────── */
+    .season-select {
+        background: rgba(255,255,255,0.08);
+        backdrop-filter: blur(8px);
+        border: 1px solid rgba(255,255,255,0.25);
+        color: white;
+        padding: 0.75rem 1.25rem;
+        border-radius: 9999px;
+        font-weight: 600;
+        letter-spacing: 1.5px;
+        transition: border-color 0.25s ease, box-shadow 0.25s ease;
+        cursor: pointer;
+    }
+    .season-select:hover,
+    .season-select:focus {
+        border-color: rgba(225,6,0,0.9);
+        box-shadow: 0 0 15px rgba(225,6,0,0.5);
+        outline: none;
+    }
+    .season-select option { background: #15151e; color: white; }
+
+    @media (prefers-reduced-motion: reduce) {
+        .reveal, .reveal-scale { opacity: 1 !important; transform: none !important; transition: none !important; }
+    }
+</style>
+
+{{-- ───────────────────────── HERO ───────────────────────── --}}
+<div class="drivers-hero">
+    <img src="{{ asset('images/racetrack.jpg') }}"
+         alt="Racetrack Banner"
+         class="absolute inset-0 w-full h-full object-cover">
+
+    <div class="drivers-hero-overlay"></div>
+    <div class="hero-stripe top"></div>
+    <div class="hero-stripe bottom"></div>
+
+    <div class="relative z-10 h-full flex flex-col justify-center items-center text-center px-4 pb-64">
+        <div class="reveal-scale">
+            <p class="audiowide-regular text-xl md:text-2xl text-white/70 tracking-[6px] mb-2">
+                {{ $selectedSeason }} SEASON
             </p>
+            <h2 class="audiowide-regular text-4xl md:text-6xl lg:text-7xl font-bold mb-6 text-white">
+                FORMULA <span class="accent">1</span> DRIVERS
+            </h2>
+            <p class="max-w-2xl text-base md:text-lg text-gray-300 mb-8 mx-auto">
+                Meet the grid of the {{ $selectedSeason }} Formula&nbsp;1 World Championship.
+            </p>
+
+            <form method="GET" action="{{ route('drivers.index') }}" class="flex items-center justify-center gap-3">
+                <label for="season" class="text-sm text-white/70 audiowide-regular uppercase tracking-widest">Season</label>
+                <select name="season" id="season" onchange="this.form.submit()" class="season-select audiowide-regular">
+                    @foreach($seasons as $season)
+                        <option value="{{ $season }}" {{ $season == $selectedSeason ? 'selected' : '' }}>
+                            {{ $season }}
+                        </option>
+                    @endforeach
+                </select>
+            </form>
         </div>
     </div>
+</div>
 
-    <!-- Driver cards -->
+{{-- ───────────────────────── CARDS ───────────────────────── --}}
+<div class="bg-gray-900 pb-20">
     <div class="max-w-7xl mx-auto px-4">
         @if(session('success'))
-            <div class="bg-green-100 text-green-800 p-4 rounded mb-4">
+            <div class="bg-green-600/20 border border-green-500/40 text-green-200 p-4 rounded-lg mb-4">
                 {{ session('success') }}
             </div>
         @endif
 
         @if($drivers->count())
-            <!-- First 3 drivers overlapping the banner -->
-            <div class="relative -mt-[18rem] z-10 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-                @foreach($drivers->take(3) as $driver)
-                    @php
-                        $constructorName = $driver->latestStanding->constructor->name ?? 'Unknown';
-                        $teamColors = [
-                            'Red Bull' => '#4781D7', 'Ferrari' => '#ED1131', 'Mercedes' => '#00D7B6',
-                            'McLaren' => '#F47600', 'Alpine F1 Team' => '#00A1E8', 'Aston Martin' => '#229971',
-                            'Williams' => '#1868DB', 'RB F1 Team' => '#6C98FF', 'Sauber' => '#01C00E',
-                            'Haas F1 Team' => '#9C9FA2',
-                        ];
-                        $bgColor = $teamColors[$constructorName] ?? '#E5E7EB';
-                        $nationalityMap = [
-                            'Australian' => 'au','Austrian' => 'at','Belgian' => 'be','Brazilian' => 'br',
-                            'British' => 'gb','Canadian' => 'ca','Chinese' => 'cn','Danish' => 'dk',
-                            'Dutch' => 'nl','Finnish' => 'fi','French' => 'fr','German' => 'de',
-                            'Italian' => 'it','Japanese' => 'jp','Mexican' => 'mx','Monegasque' => 'mc',
-                            'New Zealander' => 'nz','Polish' => 'pl','Portuguese' => 'pt','Russian' => 'ru',
-                            'Spanish' => 'es','Swedish' => 'se','Swiss' => 'ch','Thai' => 'th',
-                            'Turkish' => 'tr','American' => 'us','Czech' => 'cz','South African' => 'za',
-                            'Argentine' => 'ar','Indian' => 'in','Irish' => 'ie','Ukrainian' => 'ua',
-                            'Estonian' => 'ee','Latvian' => 'lv','Lithuanian' => 'lt',
-                        ];
-                        $flagCode = $nationalityMap[$driver->nationality] ?? 'xx';
-                        $flagUrl = "https://flagcdn.com/w40/" . $flagCode . ".png";
-                    @endphp
-
-                    <a href="{{ route('drivers.show', $driver) }}" class="block">
-                        <div class="group relative rounded-2xl shadow-lg overflow-hidden transition-all duration-500 transform"
-                            style="background-color: {{ $bgColor }}; height: 740px;">
-
-                            <!-- Glow effect on hover -->
-                            
-
-                            <div class="relative w-full h-full text-center rounded-2xl">
-                                <div class="absolute w-full h-full [backface-visibility:hidden] rounded-2xl overflow-hidden">
-
-                                    <!-- Image with zoom on hover -->
-                                    <div class="overflow-hidden rounded-t-2xl">
-                                        <img 
-                                            src="https://media.formula1.com/image/upload/f_webp,c_limit,q_50,w_640/content/dam/fom-website/drivers/2025Drivers/{{ $driver->family_name }}" 
-                                            alt="{{ $driver->given_name }} {{ $driver->family_name }}"
-                                            class="w-full h-[520px] object-cover bg-white rounded-t-2xl transform transition-transform duration-700 group-hover:scale-110"
-                                            onerror="this.onerror=null;this.src='https://upload.wikimedia.org/wikipedia/commons/thumb/a/ac/No_image_available.svg/480px-No_image_available.svg.png';"
-                                        >
-                                    </div>
-
-                                    <!-- Bottom content -->
-                                    <div class="p-6 text-white flex flex-col h-[220px] rounded-b-2xl">
-                                        <!-- Name + Flag -->
-                                        <div class="flex items-center justify-between mb-3">
-                                            <h5 class="text-xl font-bold leading-tight audiowide-regular">
-                                                {{ $driver->given_name }} {{ $driver->family_name }}
-                                            </h5>
-                                            <img src="{{ $flagUrl }}" alt="{{ $driver->nationality }}" class="w-8 h-5 rounded shadow">
-                                        </div>
-
-                                        <!-- Season Stats split into left/right -->
-                                        <div class="flex-1 flex items-center justify-between">
-                                            <!-- Left: Stats -->
-                                            <div>
-                                                <h3 class="text-lg font-semibold mb-2 audiowide-regular text-white">Season Stats</h3>
-                                                <ul class="space-y-1 text-base text-white audiowide-regular text-left">
-                                                    <li><strong>Position:</strong> {{ $driver->latestStanding->position ?? '—' }}</li>
-                                                    <li><strong>Points:</strong> {{ $driver->latestStanding->points ?? '—' }}</li>
-                                                    <li><strong>Wins:</strong> {{ $driver->latestStanding->wins ?? '—' }}</li>
-                                                </ul>
-                                            </div>
-
-                                            <!-- Right: Driver number -->
-                                            <div class="text-5xl font-bold audiowide-regular opacity-80">
-                                                #{{ $driver->permanent_number ?? '—' }}
-                                            </div>
-                                        </div>
-
-                                        <!-- Bottom row -->
-                                        <div class="flex items-center justify-between text-lg audiowide-regular mt-4">
-                                            <p></p>
-                                            <p><strong>Team:</strong> {{ $constructorName }}</p>
-                                        </div>
-                                    </div>
-
-                                </div>
-                            </div>
-                        </div>
-                    </a>
-
-                @endforeach
+            {{-- Podium row: top 3 overlapping the hero --}}
+            <div class="relative -mt-[18rem] z-20">
+                <h3 class="section-title audiowide-regular text-2xl md:text-3xl font-bold uppercase text-white mb-6 reveal">
+                    Championship Podium
+                </h3>
+                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+                    @foreach($drivers->take(3) as $driver)
+                        @if(!$driver->standings->first()) @continue @endif
+                        @include('drivers.partials.card', ['driver' => $driver, 'selectedSeason' => $selectedSeason])
+                    @endforeach
+                </div>
             </div>
 
-            <!-- Remaining drivers -->
-            <div class="mt-12 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-                @foreach($drivers->skip(3) as $driver)
-                @php
-                        $constructorName = $driver->latestStanding->constructor->name ?? 'Unknown';
-                        $teamColors = [
-                            'Red Bull' => '#4781D7', 'Ferrari' => '#ED1131', 'Mercedes' => '#00D7B6',
-                            'McLaren' => '#F47600', 'Alpine F1 Team' => '#00A1E8', 'Aston Martin' => '#229971',
-                            'Williams' => '#1868DB', 'RB F1 Team' => '#6C98FF', 'Sauber' => '#01C00E',
-                            'Haas F1 Team' => '#9C9FA2',
-                        ];
-                        $bgColor = $teamColors[$constructorName] ?? '#E5E7EB';
-                        $nationalityMap = [
-                            'Australian' => 'au','Austrian' => 'at','Belgian' => 'be','Brazilian' => 'br',
-                            'British' => 'gb','Canadian' => 'ca','Chinese' => 'cn','Danish' => 'dk',
-                            'Dutch' => 'nl','Finnish' => 'fi','French' => 'fr','German' => 'de',
-                            'Italian' => 'it','Japanese' => 'jp','Mexican' => 'mx','Monegasque' => 'mc',
-                            'New Zealander' => 'nz','Polish' => 'pl','Portuguese' => 'pt','Russian' => 'ru',
-                            'Spanish' => 'es','Swedish' => 'se','Swiss' => 'ch','Thai' => 'th',
-                            'Turkish' => 'tr','American' => 'us','Czech' => 'cz','South African' => 'za',
-                            'Argentine' => 'ar','Indian' => 'in','Irish' => 'ie','Ukrainian' => 'ua',
-                            'Estonian' => 'ee','Latvian' => 'lv','Lithuanian' => 'lt',
-                        ];
-                        $flagCode = $nationalityMap[$driver->nationality] ?? 'xx';
-                        $flagUrl = "https://flagcdn.com/w40/" . $flagCode . ".png";
-                    @endphp
-
-                    <a href="{{ route('drivers.show', $driver) }}" class="block">
-                        <div class="group relative rounded-2xl shadow-lg overflow-hidden transition-all duration-500 transform"
-                            style="background-color: {{ $bgColor }}; height: 740px;">
-
-                            <!-- Glow effect on hover -->
-                            <div class="absolute inset-0 rounded-2xl border-2 border-transparent"></div>
-
-                            <div class="relative w-full h-full text-center rounded-2xl">
-                                <div class="absolute w-full h-full [backface-visibility:hidden] rounded-2xl overflow-hidden">
-
-                                    <!-- Image with zoom on hover -->
-                                    <div class="overflow-hidden rounded-t-2xl">
-                                        <img 
-                                            src="https://media.formula1.com/image/upload/f_webp,c_limit,q_50,w_640/content/dam/fom-website/drivers/2025Drivers/{{ $driver->family_name }}" 
-                                            alt="{{ $driver->given_name }} {{ $driver->family_name }}"
-                                            class="w-full h-[520px] object-cover bg-white rounded-t-2xl transform transition-transform duration-700 group-hover:scale-110"
-                                            onerror="this.onerror=null;this.src='https://upload.wikimedia.org/wikipedia/commons/thumb/a/ac/No_image_available.svg/480px-No_image_available.svg.png';"
-                                        >
-                                    </div>
-
-                                    <!-- Bottom content -->
-                                    <div class="p-6 text-white flex flex-col h-[220px] rounded-b-2xl">
-                                        <!-- Name + Flag -->
-                                        <div class="flex items-center justify-between mb-3">
-                                            <h5 class="text-xl font-bold leading-tight audiowide-regular">
-                                                {{ $driver->given_name }} {{ $driver->family_name }}
-                                            </h5>
-                                            <img src="{{ $flagUrl }}" alt="{{ $driver->nationality }}" class="w-8 h-5 rounded shadow">
-                                        </div>
-
-                                        <!-- Season Stats split into left/right -->
-                                        <div class="flex-1 flex items-center justify-between">
-                                            <!-- Left: Stats -->
-                                            <div>
-                                                <h3 class="text-lg font-semibold mb-2 audiowide-regular text-white">Season Stats</h3>
-                                                <ul class="space-y-1 text-base text-white audiowide-regular text-left">
-                                                    <li><strong>Position:</strong> {{ $driver->latestStanding->position ?? '—' }}</li>
-                                                    <li><strong>Points:</strong> {{ $driver->latestStanding->points ?? '—' }}</li>
-                                                    <li><strong>Wins:</strong> {{ $driver->latestStanding->wins ?? '—' }}</li>
-                                                </ul>
-                                            </div>
-
-                                            <!-- Right: Driver number -->
-                                            <div class="text-5xl font-bold audiowide-regular opacity-80">
-                                                #{{ $driver->permanent_number ?? '—' }}
-                                            </div>
-                                        </div>
-
-                                        <!-- Bottom row -->
-                                        <div class="flex items-center justify-between text-lg audiowide-regular mt-4">
-                                            <p></p>
-                                            <p><strong>Team:</strong> {{ $constructorName }}</p>
-                                        </div>
-                                    </div>
-
-                                </div>
-                            </div>
-                        </div>
-                    </a>
-
-                @endforeach
-            </div>
+            {{-- Rest of the grid --}}
+            @if($drivers->count() > 3)
+                <div class="mt-16">
+                    <h3 class="section-title audiowide-regular text-2xl md:text-3xl font-bold uppercase text-white mb-6 reveal">
+                        The Rest of the Grid
+                    </h3>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+                        @foreach($drivers->skip(3) as $driver)
+                            @if(!$driver->standings->first()) @continue @endif
+                            @include('drivers.partials.card', ['driver' => $driver, 'selectedSeason' => $selectedSeason])
+                        @endforeach
+                    </div>
+                </div>
+            @endif
         @else
-            <p class="text-center text-gray-600">
-                No drivers found. 
-                <a href="{{ route('drivers.sync') }}" class="text-blue-500 hover:underline">Sync now</a>
-            </p>
+            <div class="text-center py-24">
+                <p class="text-gray-400 text-lg">
+                    No drivers found.
+                    <a href="{{ route('drivers.sync') }}" class="text-red-500 hover:text-red-400 underline">Sync now</a>
+                </p>
+            </div>
         @endif
     </div>
+</div>
+
+<script>
+// Scroll-reveal observer
+(function(){
+    const targets = document.querySelectorAll('.reveal, .reveal-scale');
+    if (!('IntersectionObserver' in window) || !targets.length) {
+        targets.forEach(el => el.classList.add('is-visible'));
+        return;
+    }
+    const io = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('is-visible');
+                io.unobserve(entry.target);
+            }
+        });
+    }, { threshold: 0.12, rootMargin: '0px 0px -60px 0px' });
+
+    targets.forEach(el => io.observe(el));
+})();
+</script>
 </x-app-layout>
