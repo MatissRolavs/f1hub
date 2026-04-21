@@ -408,9 +408,9 @@
                         </tr>
                     </thead>
                     <tbody>
-                        @foreach($leaderboard->slice(3) as $index => $player)
+                        @foreach($leaderboard->slice(3, 7) as $index => $player)
                             <tr class="lb-row">
-                                <td><span class="font-bold text-white/80">{{ $index + 4 }}</span></td>
+                                <td><span class="font-bold text-white/80">{{ $index + 1 }}</span></td>
                                 <td class="font-bold">{{ $player->player_name }}</td>
                                 <td class="text-right tabular-nums font-bold">{{ $player->total_score }}</td>
                                 <td class="text-right tabular-nums hidden sm:table-cell text-white/70">{{ $player->races_played }}</td>
