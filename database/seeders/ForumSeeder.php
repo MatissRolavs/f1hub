@@ -24,7 +24,7 @@ class ForumSeeder extends Seeder
             return;
         }
 
-        $races = Race::where('season', 2025)
+        $races = Race::where('season', 2026)
             ->where('date', '<', now())
             ->orderByDesc('date')
             ->take(8)
