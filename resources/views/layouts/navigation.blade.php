@@ -263,11 +263,11 @@
                         {{ __('HOME') }}
                     </a>
                     <a href="{{ route('drivers.index') }}"
-                       class="nav-link {{ request()->routeIs('drivers.index') ? 'active' : '' }}">
+                       class="nav-link {{ request()->routeIs('drivers.*') ? 'active' : '' }}">
                         {{ __('DRIVERS') }}
                     </a>
                     <a href="{{ route('races.index') }}"
-                       class="nav-link {{ request()->routeIs('races.index') ? 'active' : '' }}">
+                       class="nav-link {{ request()->routeIs('races.*') ? 'active' : '' }}">
                         {{ __('RACES') }}
                     </a>
 
@@ -296,7 +296,7 @@
                     </div>
 
                     <a href="{{ route('forums.index') }}"
-                       class="nav-link {{ request()->routeIs('forums.index') ? 'active' : '' }}">
+                       class="nav-link {{ request()->routeIs('forums.*') ? 'active' : '' }}">
                         {{ __('FORUMS') }}
                     </a>
                     <a href="{{ route('game.index') }}"
@@ -359,13 +359,15 @@
             <a href="{{ route('dashboard') }}"
                class="mobile-link {{ request()->routeIs('dashboard') ? 'active' : '' }}">{{ __('HOME') }}</a>
             <a href="{{ route('drivers.index') }}"
-               class="mobile-link {{ request()->routeIs('drivers.index') ? 'active' : '' }}">{{ __('DRIVERS') }}</a>
+               class="mobile-link {{ request()->routeIs('drivers.*') ? 'active' : '' }}">{{ __('DRIVERS') }}</a>
             <a href="{{ route('races.index') }}"
-               class="mobile-link {{ request()->routeIs('races.index') ? 'active' : '' }}">{{ __('RACES') }}</a>
+               class="mobile-link {{ request()->routeIs('races.*') ? 'active' : '' }}">{{ __('RACES') }}</a>
             <a href="{{ route('standings.index') }}"
-               class="mobile-link {{ request()->routeIs('standings.*') ? 'active' : '' }}">{{ __('STANDINGS') }}</a>
+               class="mobile-link {{ request()->routeIs('standings.index') ? 'active' : '' }}">{{ __('DRIVER STANDINGS') }}</a>
+            <a href="{{ route('standings.constructors', ['season' => now()->year]) }}"
+               class="mobile-link {{ request()->routeIs('standings.constructors') ? 'active' : '' }}">{{ __('CONSTRUCTOR STANDINGS') }}</a>
             <a href="{{ route('forums.index') }}"
-               class="mobile-link {{ request()->routeIs('forums.index') ? 'active' : '' }}">{{ __('FORUMS') }}</a>
+               class="mobile-link {{ request()->routeIs('forums.*') ? 'active' : '' }}">{{ __('FORUMS') }}</a>
             <a href="{{ route('game.index') }}"
                class="mobile-link {{ request()->routeIs('game.*') ? 'active' : '' }}">{{ __('PREDICTION GAME') }}</a>
             @auth

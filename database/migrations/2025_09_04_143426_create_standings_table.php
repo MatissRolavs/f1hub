@@ -12,15 +12,15 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('standings', function (Blueprint $table) {
-    $table->id();
-    $table->foreignId('driver_id')->constrained('drivers');
-    $table->foreignId('constructor_id')->constrained('constructors');
-    $table->string('season');
-    $table->string('round');
-    $table->integer('position');
-    $table->integer('points');
-    $table->integer('wins');
-    $table->timestamps();
+            $table->id();
+            $table->foreignId('driver_id')->constrained('drivers');
+            $table->foreignId('constructor_id')->constrained('constructors');
+            $table->string('season');
+            $table->string('round');
+            $table->integer('position');
+            $table->integer('points');
+            $table->integer('wins');
+            $table->timestamps();
 });
 
     }

@@ -12,31 +12,31 @@ use Illuminate\Support\Facades\Http;
 class HomeController extends Controller
 {
     public function index()
-{
-    // Drivers preview
-    $drivers = Driver::with('latestStanding.constructor')
-        ->take(3)
-        ->get();
+    {
+        ['drivers' => $drivers, 'nextRace' => $nextRace, 'featuredRaces' => $featuredRaces] = $this->sharedData();
 
-    // Featured races (custom cards)
-    $featuredRaces = $this->getFeaturedRaces();
+        return view('dashboard', [
+            'drivers'       => $drivers,
+            'featuredRaces' => $featuredRaces,
+            'nextRace'      => $nextRace,
+        ]);
+    }
 
-    // --- Pull Next Race from Ergast (just like game.index) ---
-    $season = date('Y');
-    $url = "https://api.jolpi.ca/ergast/f1/{$season}.json";
-    $response = Http::timeout(15)->get($url);
+    private function sharedData(): array
+    {
+        $drivers = Driver::with('latestStanding.constructor')->take(3)->get();
 
-    $nextRace = collect($response->json()['MRData']['RaceTable']['Races'] ?? [])
-        ->filter(fn($race) => \Carbon\Carbon::parse($race['date'])->isFuture())
-        ->sortBy('date')
-        ->first(); // get only the very next race
+        $season   = date('Y');
+        $response = Http::timeout(15)->get("https://api.jolpi.ca/ergast/f1/{$season}.json");
+        $nextRace = collect($response->json()['MRData']['RaceTable']['Races'] ?? [])
+            ->filter(fn($race) => Carbon::parse($race['date'])->isFuture())
+            ->sortBy('date')
+            ->first();
 
-    return view('dashboard', [
-        'drivers'       => $drivers,
-        'featuredRaces' => $featuredRaces,
-        'nextRace'      => $nextRace,
-    ]);
-}
+        $featuredRaces = $this->getFeaturedRaces();
+
+        return compact('drivers', 'nextRace', 'featuredRaces');
+    }
 
     public function getFeaturedRaces()
     {
