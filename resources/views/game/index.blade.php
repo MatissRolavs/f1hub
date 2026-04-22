@@ -360,10 +360,17 @@
         {{-- Podium --}}
         <div class="reveal-stagger grid grid-cols-1 md:grid-cols-3 gap-6 mb-10 items-end">
             @if(isset($leaderboard[1]))
-                <div class="podium-card second md:order-1">
+                @php $tc1 = config('f1.team_colors.' . ($leaderboard[1]->constructor_name ?? ''), '#6b7280'); @endphp
+                <div class="podium-card second md:order-1" style="border-top: 3px solid {{ $tc1 }}; box-shadow: 0 0 20px {{ $tc1 }}33;">
                     <div class="pos-medal medal-2">2</div>
                     <div class="mt-16">
                         <p class="text-lg font-bold text-white break-words">{{ $leaderboard[1]->player_name }}</p>
+                        @if($leaderboard[1]->constructor_name)
+                            <p class="text-xs mt-1 font-semibold" style="color:{{ $tc1 }};">{{ $leaderboard[1]->constructor_name }}</p>
+                        @endif
+                        @if($leaderboard[1]->driver_name && trim($leaderboard[1]->driver_name))
+                            <p class="text-xs text-white/40 mt-0.5">🏎 {{ $leaderboard[1]->driver_name }}</p>
+                        @endif
                         <p class="text-3xl font-extrabold text-white mt-2">{{ $leaderboard[1]->total_score }} <span class="text-sm font-medium opacity-70">pts</span></p>
                         <p class="text-xs text-white/60 mt-2">{{ $leaderboard[1]->races_played }} races</p>
                     </div>
@@ -373,10 +380,17 @@
             @endif
 
             @if(isset($leaderboard[0]))
-                <div class="podium-card first md:order-2">
+                @php $tc0 = config('f1.team_colors.' . ($leaderboard[0]->constructor_name ?? ''), '#e10600'); @endphp
+                <div class="podium-card first md:order-2" style="border-top: 3px solid {{ $tc0 }}; box-shadow: 0 0 28px {{ $tc0 }}44;">
                     <div class="pos-medal medal-1">1</div>
                     <div class="mt-16">
                         <p class="text-xl font-bold text-white break-words">{{ $leaderboard[0]->player_name }}</p>
+                        @if($leaderboard[0]->constructor_name)
+                            <p class="text-xs mt-1 font-semibold" style="color:{{ $tc0 }};">{{ $leaderboard[0]->constructor_name }}</p>
+                        @endif
+                        @if($leaderboard[0]->driver_name && trim($leaderboard[0]->driver_name))
+                            <p class="text-xs text-white/40 mt-0.5">🏎 {{ $leaderboard[0]->driver_name }}</p>
+                        @endif
                         <p class="text-4xl font-extrabold text-white mt-2">{{ $leaderboard[0]->total_score }} <span class="text-sm font-medium opacity-70">pts</span></p>
                         <p class="text-xs text-white/70 mt-2">{{ $leaderboard[0]->races_played }} races</p>
                     </div>
@@ -384,10 +398,17 @@
             @endif
 
             @if(isset($leaderboard[2]))
-                <div class="podium-card third md:order-3">
+                @php $tc2 = config('f1.team_colors.' . ($leaderboard[2]->constructor_name ?? ''), '#fb923c'); @endphp
+                <div class="podium-card third md:order-3" style="border-top: 3px solid {{ $tc2 }}; box-shadow: 0 0 20px {{ $tc2 }}33;">
                     <div class="pos-medal medal-3">3</div>
                     <div class="mt-16">
                         <p class="text-lg font-bold text-white break-words">{{ $leaderboard[2]->player_name }}</p>
+                        @if($leaderboard[2]->constructor_name)
+                            <p class="text-xs mt-1 font-semibold" style="color:{{ $tc2 }};">{{ $leaderboard[2]->constructor_name }}</p>
+                        @endif
+                        @if($leaderboard[2]->driver_name && trim($leaderboard[2]->driver_name))
+                            <p class="text-xs text-white/40 mt-0.5">🏎 {{ $leaderboard[2]->driver_name }}</p>
+                        @endif
                         <p class="text-3xl font-extrabold text-white mt-2">{{ $leaderboard[2]->total_score }} <span class="text-sm font-medium opacity-70">pts</span></p>
                         <p class="text-xs text-white/60 mt-2">{{ $leaderboard[2]->races_played }} races</p>
                     </div>
@@ -409,9 +430,18 @@
                     </thead>
                     <tbody>
                         @foreach($leaderboard->slice(3, 7) as $index => $player)
+                            @php $tc = config('f1.team_colors.' . ($player->constructor_name ?? ''), '#444'); @endphp
                             <tr class="lb-row">
-                                <td><span class="font-bold text-white/80">{{ $index + 1 }}</span></td>
-                                <td class="font-bold">{{ $player->player_name }}</td>
+                                <td><span class="font-bold text-white/80">{{ $index + 4 }}</span></td>
+                                <td>
+                                    <div class="flex items-center gap-2">
+                                        <span class="inline-block w-2.5 h-2.5 rounded-full flex-shrink-0" style="background:{{ $tc }};box-shadow:0 0 6px {{ $tc }}99;"></span>
+                                        <span class="font-bold">{{ $player->player_name }}</span>
+                                    </div>
+                                    @if($player->driver_name && trim($player->driver_name))
+                                        <div class="text-xs text-white/35 mt-0.5 pl-4">🏎 {{ $player->driver_name }}</div>
+                                    @endif
+                                </td>
                                 <td class="text-right tabular-nums font-bold">{{ $player->total_score }}</td>
                                 <td class="text-right tabular-nums hidden sm:table-cell text-white/70">{{ $player->races_played }}</td>
                             </tr>

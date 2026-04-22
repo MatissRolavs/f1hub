@@ -25,13 +25,22 @@ class RaceGameController extends Controller
             ->take(1)
             ->values();
     
-        // Fetch leaderboard data
+        // Fetch leaderboard data with favourite team/driver info
         $leaderboard = DB::table('game_scores')
-            ->select('player_name', DB::raw('SUM(score) as total_score'), DB::raw('COUNT(*) as races_played'))
-            ->groupBy('player_name')
+            ->leftJoin('users', 'users.name', '=', 'game_scores.player_name')
+            ->leftJoin('constructors', 'constructors.id', '=', 'users.favorite_constructor_id')
+            ->leftJoin('drivers', 'drivers.id', '=', 'users.favorite_driver_id')
+            ->select(
+                'game_scores.player_name',
+                DB::raw('SUM(game_scores.score) as total_score'),
+                DB::raw('COUNT(*) as races_played'),
+                'constructors.name as constructor_name',
+                DB::raw("CONCAT(drivers.given_name, ' ', drivers.family_name) as driver_name")
+            )
+            ->groupBy('game_scores.player_name', 'constructors.name', 'drivers.given_name', 'drivers.family_name')
             ->orderByDesc('total_score')
             ->get();
-    
+
         return view('game.index', compact('races', 'leaderboard'));
     }
     
@@ -240,8 +249,17 @@ public function playPast(Request $request)
 public function leaderboard()
 {
     $leaderboard = DB::table('game_scores')
-        ->select('player_name', DB::raw('SUM(score) as total_score'), DB::raw('COUNT(*) as races_played'))
-        ->groupBy('player_name')
+        ->leftJoin('users', 'users.name', '=', 'game_scores.player_name')
+        ->leftJoin('constructors', 'constructors.id', '=', 'users.favorite_constructor_id')
+        ->leftJoin('drivers', 'drivers.id', '=', 'users.favorite_driver_id')
+        ->select(
+            'game_scores.player_name',
+            DB::raw('SUM(game_scores.score) as total_score'),
+            DB::raw('COUNT(*) as races_played'),
+            'constructors.name as constructor_name',
+            DB::raw("CONCAT(drivers.given_name, ' ', drivers.family_name) as driver_name")
+        )
+        ->groupBy('game_scores.player_name', 'constructors.name', 'drivers.given_name', 'drivers.family_name')
         ->orderByDesc('total_score')
         ->get();
 
