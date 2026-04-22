@@ -432,7 +432,7 @@
                         @foreach($leaderboard->slice(3, 7) as $index => $player)
                             @php $tc = config('f1.team_colors.' . ($player->constructor_name ?? ''), '#444'); @endphp
                             <tr class="lb-row">
-                                <td><span class="font-bold text-white/80">{{ $index + 4 }}</span></td>
+                                <td><span class="font-bold text-white/80">{{ $index + 1 }}</span></td>
                                 <td>
                                     <div class="flex items-center gap-2">
                                         <span class="inline-block w-2.5 h-2.5 rounded-full flex-shrink-0" style="background:{{ $tc }};box-shadow:0 0 6px {{ $tc }}99;"></span>
