@@ -2,7 +2,12 @@
   "permissions": {
     "allow": [
       "Bash(xargs ls:*)",
-      "Bash(php artisan *)"
+      "Bash(php artisan *)",
+      "Bash(composer require *)",
+      "Bash(php -r \"echo rand\\(100000, 999999\\) . ' ' . bin2hex\\(random_bytes\\(10\\)\\) . ' ' . bin2hex\\(random_bytes\\(20\\)\\);\")",
+      "Bash(npm install *)",
+      "Bash(grep -n '$race\\\\b' /Users/matissrolavs/Documents/projects/f1hub/app/Http/Controllers/RaceController.php)",
+      "Bash(npm run *)"
     ]
   }
 }

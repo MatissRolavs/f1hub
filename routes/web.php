@@ -25,10 +25,16 @@ Route::get('/races', [RaceController::class, 'showRacesFromDb'])->name('races.in
 
 Route::get('/standings/constructors/{season?}', [ConstructorController::class, 'constructorsStandings'])->name('standings.constructors');
 
+Route::get('/live-chat', [\App\Http\Controllers\LiveChatController::class, 'index'])->name('live-chat');
+
 Route::get('/forums', [ForumController::class, 'index'])->name('forums.index');
 Route::get('/forums/{race}', [ForumController::class, 'show'])->name('forums.show');
 Route::post('/forums/{race}', [ForumController::class, 'store'])->middleware('auth')->name('forums.store');
 Route::get('/posts/{post}', [ForumController::class, 'showPost'])->name('posts.show');
+
+Route::post('/races/{season}/{round}/chat', [\App\Http\Controllers\RaceChatController::class, 'send'])
+    ->middleware('auth')
+    ->name('races.chat.send');
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
