@@ -72,6 +72,31 @@
         50%       { transform: translateX(-50%) translateY(6px); }
     }
 
+    /* ── Hero scroll hint (arrow under CTAs) ── */
+    .hero-scroll-hint {
+        margin-top: 2.5rem;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.5rem;
+        color: rgba(255,255,255,0.4);
+    }
+    .scroll-hint-label {
+        font-family: 'Audiowide', sans-serif;
+        font-size: 0.6rem;
+        letter-spacing: 3px;
+        text-transform: uppercase;
+    }
+    .scroll-hint-arrow {
+        width: 28px;
+        height: 28px;
+        animation: arrowBounce 1.8s ease-in-out infinite;
+    }
+    @keyframes arrowBounce {
+        0%, 100% { transform: translateY(0);   opacity: 0.4; }
+        50%       { transform: translateY(7px); opacity: 0.8; }
+    }
+
     /* ── Buttons ─────────────────────────────── */
     .btn-primary {
         font-family: 'Audiowide', sans-serif; font-size: 0.75rem; letter-spacing: 2px; text-transform: uppercase;
@@ -191,6 +216,12 @@
         <div class="hero-cta-group reveal">
             <a href="{{ route('drivers.index') }}" class="btn-primary">Explore the Grid</a>
             <a href="{{ route('races.index') }}" class="btn-ghost">Race Calendar</a>
+        </div>
+        <div class="hero-scroll-hint reveal">
+            <span class="scroll-hint-label">Scroll down for more info</span>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="scroll-hint-arrow">
+                <polyline points="6 9 12 15 18 9"/>
+            </svg>
         </div>
     </div>
 
