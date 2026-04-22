@@ -20,6 +20,7 @@ class DatabaseSeeder extends Seeder
 
         $this->call([
             FakeUsersSeeder::class,
+            FavoriteSeeder::class,
             ForumSeeder::class,
             GamePredictionSeeder::class,
         ]);
