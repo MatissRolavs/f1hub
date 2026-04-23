@@ -1,16 +1,15 @@
 <x-app-layout>
 <style>
-    body { background: #0a0a0f !important; }
+    body, html { background: #0a0a0f !important; overflow: hidden; height: 100%; }
 
-    /* ── Layout ─────────────────────────────── */
+    /* ── Outer wrapper — full viewport minus nav ── */
     .lc-wrap {
-        min-height: calc(100vh - 4rem);
+        height: calc(100vh - 4rem);
         display: flex;
         flex-direction: column;
-        max-width: 900px;
-        margin: 0 auto;
-        padding: 1.5rem 1rem 2rem;
-        gap: 1.25rem;
+        padding: 0.75rem 1rem;
+        gap: 0.75rem;
+        overflow: hidden;
     }
 
     /* ── Header bar ─────────────────────────── */
@@ -18,11 +17,11 @@
         display: flex;
         align-items: center;
         gap: 1rem;
-        flex-wrap: wrap;
+        flex-shrink: 0;
     }
     .lc-title {
         font-family: 'Audiowide', sans-serif;
-        font-size: 1rem;
+        font-size: 0.9rem;
         letter-spacing: 3px;
         text-transform: uppercase;
         color: white;
@@ -62,12 +61,29 @@
     .race-select:focus { border-color: rgba(225,6,0,0.6); }
     .race-select option { background: #1a1a28; }
 
+    /* ── Main content row — video left, chat right ── */
+    .lc-content {
+        flex: 1;
+        display: flex;
+        gap: 0.75rem;
+        min-height: 0;
+    }
+
+    /* ── Video side ─────────────────────────── */
+    .lc-video-side {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        min-width: 0;
+        gap: 0;
+    }
+
     /* ── Video placeholder ──────────────────── */
     .video-slot {
+        flex: 1;
         background: #0d0d14;
         border: 1px dashed rgba(255,255,255,0.1);
         border-radius: 0.75rem;
-        aspect-ratio: 16/9;
         display: flex;
         flex-direction: column;
         align-items: center;
@@ -78,19 +94,21 @@
         font-size: 0.65rem;
         letter-spacing: 2px;
         text-transform: uppercase;
+        min-height: 0;
     }
     .video-slot svg { width: 40px; height: 40px; opacity: 0.2; }
 
-    /* ── Chat panel ─────────────────────────── */
+    /* ── Chat panel — fixed width right column ── */
     .lc-panel {
-        flex: 1;
+        width: 340px;
+        flex-shrink: 0;
         display: flex;
         flex-direction: column;
         background: #0f0f17;
         border: 1px solid rgba(255,255,255,0.08);
         border-radius: 1rem;
         overflow: hidden;
-        min-height: 400px;
+        min-height: 0;
     }
     .lc-panel-header {
         padding: 0.9rem 1.25rem;
@@ -244,14 +262,19 @@
         </select>
     </div>
 
-    {{-- ── Video slot (placeholder for future embed) ── --}}
-    <div class="video-slot" id="video-slot">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2">
-            <rect x="2" y="4" width="20" height="16" rx="2"/>
-            <polygon points="10,8 16,12 10,16" fill="currentColor" stroke="none"/>
-        </svg>
-        <span>Video stream coming soon</span>
-    </div>
+    {{-- ── Main row: video left, chat right ── --}}
+    <div class="lc-content">
+
+        {{-- Video side --}}
+        <div class="lc-video-side">
+            <div class="video-slot" id="video-slot">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2">
+                    <rect x="2" y="4" width="20" height="16" rx="2"/>
+                    <polygon points="10,8 16,12 10,16" fill="currentColor" stroke="none"/>
+                </svg>
+                <span>Video stream coming soon</span>
+            </div>
+        </div>
 
     {{-- ── Chat panel ── --}}
     <div class="lc-panel">
@@ -281,9 +304,11 @@
             <a href="{{ route('login') }}">Log in</a> to join the conversation
         </div>
         @endauth
-    </div>
+    </div>{{-- end .lc-panel --}}
 
-</div>
+    </div>{{-- end .lc-content --}}
+
+</div>{{-- end .lc-wrap --}}
 
 <script>
 // Blade data injected before Echo is ready — safe, just plain values
