@@ -187,6 +187,48 @@
         letter-spacing: 1px;
     }
 
+    /* ── Pagination ─────────────────────────────────────── */
+    .f1-pagination {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.4rem;
+        flex-wrap: wrap;
+    }
+    .f1-pagination a,
+    .f1-pagination span {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 2.5rem;
+        height: 2.5rem;
+        padding: 0 0.75rem;
+        border-radius: 0.5rem;
+        font-family: 'Audiowide', sans-serif;
+        font-size: 0.7rem;
+        letter-spacing: 1px;
+        border: 1px solid rgba(255,255,255,0.1);
+        background: rgba(255,255,255,0.04);
+        color: rgba(255,255,255,0.6);
+        transition: background 0.2s, border-color 0.2s, color 0.2s;
+        text-decoration: none;
+    }
+    .f1-pagination a:hover {
+        background: rgba(225,6,0,0.15);
+        border-color: rgba(225,6,0,0.5);
+        color: white;
+    }
+    .f1-pagination span.active {
+        background: #e10600;
+        border-color: #e10600;
+        color: white;
+        box-shadow: 0 0 14px rgba(225,6,0,0.5);
+    }
+    .f1-pagination span.disabled {
+        opacity: 0.3;
+        cursor: not-allowed;
+    }
+
     @media (prefers-reduced-motion: reduce) {
         .reveal, .reveal-scale, .reveal-stagger > * {
             opacity: 1 !important; transform: none !important; transition: none !important;
@@ -308,6 +350,35 @@
             </div>
         @endforelse
     </div>
+
+    {{-- ── Pagination ── --}}
+    @if($races->hasPages())
+    <div class="f1-pagination pb-20 reveal">
+        {{-- Previous --}}
+        @if($races->onFirstPage())
+            <span class="disabled">← Prev</span>
+        @else
+            <a href="{{ $races->previousPageUrl() }}">← Prev</a>
+        @endif
+
+        {{-- Page numbers --}}
+        @foreach($races->getUrlRange(1, $races->lastPage()) as $page => $url)
+            @if($page == $races->currentPage())
+                <span class="active">{{ $page }}</span>
+            @else
+                <a href="{{ $url }}">{{ $page }}</a>
+            @endif
+        @endforeach
+
+        {{-- Next --}}
+        @if($races->hasMorePages())
+            <a href="{{ $races->nextPageUrl() }}">Next →</a>
+        @else
+            <span class="disabled">Next →</span>
+        @endif
+    </div>
+    @endif
+
 </div>
 
 <script>

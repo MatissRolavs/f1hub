@@ -48,7 +48,7 @@ class ForumController extends Controller
                 break;
         }
 
-        $races = $races->get();
+        $races = $races->paginate(10)->withQueryString();
 
         // Full season list from Jolpica (cached). Seasons without races in the DB
         // will simply show an empty result until /races loads them on demand.
