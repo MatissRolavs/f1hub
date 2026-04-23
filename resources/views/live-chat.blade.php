@@ -159,6 +159,7 @@
         flex-direction: column;
         gap: 0.2rem;
         animation: chatIn 0.2s ease;
+        position: relative;
     }
     @keyframes chatIn {
         from { opacity: 0; transform: translateY(6px); }
@@ -184,6 +185,79 @@
         color: rgba(255,255,255,0.2);
         margin-left: auto;
     }
+
+    /* Admin controls */
+    .admin-menu {
+        display: none;
+        position: absolute;
+        right: 0; top: 0;
+        background: #1a1a2e;
+        border: 1px solid rgba(255,255,255,0.1);
+        border-radius: 0.5rem;
+        overflow: hidden;
+        z-index: 50;
+        min-width: 160px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.6);
+    }
+    .chat-msg:hover .admin-trigger { opacity: 1; }
+    .admin-trigger {
+        opacity: 0;
+        transition: opacity 0.15s;
+        background: none;
+        border: none;
+        color: rgba(255,255,255,0.35);
+        cursor: pointer;
+        font-size: 0.7rem;
+        padding: 0 0.25rem;
+        line-height: 1;
+        margin-left: 0.25rem;
+    }
+    .admin-trigger:hover { color: #e10600; }
+    .admin-menu.open { display: block; }
+    .admin-menu button {
+        display: block;
+        width: 100%;
+        text-align: left;
+        background: none;
+        border: none;
+        color: rgba(255,255,255,0.7);
+        font-size: 0.75rem;
+        padding: 0.6rem 0.9rem;
+        cursor: pointer;
+        transition: background 0.15s, color 0.15s;
+    }
+    .admin-menu button:hover { background: rgba(225,6,0,0.15); color: #e10600; }
+    .admin-menu button.unmute-btn { color: rgba(100,255,100,0.7); }
+    .admin-menu button.unmute-btn:hover { background: rgba(100,255,100,0.1); color: #4ade80; }
+
+    /* System messages (mute notifications) */
+    .chat-system {
+        text-align: center;
+        font-size: 0.7rem;
+        color: rgba(255,255,255,0.3);
+        font-family: 'Audiowide', sans-serif;
+        letter-spacing: 1px;
+        padding: 0.25rem 0;
+        animation: chatIn 0.2s ease;
+    }
+    .chat-system.warn { color: rgba(225,6,0,0.7); }
+
+    /* Muted input state */
+    #chat-input.muted, #chat-send.muted {
+        opacity: 0.4;
+        cursor: not-allowed;
+        pointer-events: none;
+    }
+    .muted-notice {
+        font-size: 0.7rem;
+        color: rgba(225,6,0,0.7);
+        text-align: center;
+        padding: 0.4rem;
+        font-family: 'Audiowide', sans-serif;
+        letter-spacing: 1px;
+        display: none;
+    }
+
     .chat-msg .body {
         font-size: 0.9rem;
         color: rgba(255,255,255,0.8);
@@ -294,6 +368,7 @@
         </div>
 
         @auth
+        <div class="muted-notice" id="muted-notice">🔇 You are muted</div>
         <div class="lc-input-row">
             <input id="chat-input" type="text" maxlength="300"
                    placeholder="Say something about the race…" autocomplete="off">
@@ -311,43 +386,66 @@
 </div>{{-- end .lc-wrap --}}
 
 <script>
-// Blade data injected before Echo is ready — safe, just plain values
 const CHAT_CONFIG = {
     @auth
-    myName:    @json(auth()->user()->name),
-    myColor:   @json($chatUserColor),
-    loggedIn:  true,
+    myName:   @json(auth()->user()->name),
+    myColor:  @json($chatUserColor),
+    myId:     @json(auth()->user()->id),
+    isAdmin:  @json(auth()->user()->role === 'admin'),
+    loggedIn: true,
     @else
-    myName:    null,
-    myColor:   '#e10600',
-    loggedIn:  false,
+    myName:   null, myColor: '#e10600', myId: null, isAdmin: false, loggedIn: false,
     @endauth
-    csrfToken: document.querySelector('meta[name="csrf-token"]')?.content ?? '',
+    csrfToken:  document.querySelector('meta[name="csrf-token"]')?.content ?? '',
+    muteUrl:    '{{ route('chat.mute') }}',
+    unmuteUrl:  '{{ route('chat.unmute') }}',
 };
 
-// Wait for app.js module (which sets window.Echo) to finish executing,
-// then boot the chat. 'load' fires after all deferred/module scripts run.
 window.addEventListener('load', function () {
-    const selector    = document.getElementById('race-selector');
-    const panelName   = document.getElementById('panel-race-name');
-    const list        = document.getElementById('chat-messages');
-    const input       = document.getElementById('chat-input');
-    const sendBtn     = document.getElementById('chat-send');
+    const selector  = document.getElementById('race-selector');
+    const panelName = document.getElementById('panel-race-name');
+    const list      = document.getElementById('chat-messages');
+    const input     = document.getElementById('chat-input');
+    const sendBtn   = document.getElementById('chat-send');
+    const mutedNote = document.getElementById('muted-notice');
 
     let currentChannel = null;
     let currentSendUrl = null;
+    let isMuted = false;
+    let openMenu = null; // currently open admin dropdown
 
-    // ── Helpers ──────────────────────────────────────────────────
+    // ── Helpers ──────────────────────────────────────────────
+    const escHtml = str => String(str)
+        .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+        .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+
+    const nowTime = () => new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
     function getSelectedOption() {
         return selector?.options[selector.selectedIndex] ?? null;
     }
 
+    function setMuted(muted, reason = '') {
+        isMuted = muted;
+        if (!input || !sendBtn) return;
+        input.classList.toggle('muted', muted);
+        sendBtn.classList.toggle('muted', muted);
+        if (mutedNote) {
+            mutedNote.style.display = muted ? 'block' : 'none';
+            mutedNote.textContent = muted ? ('🔇 ' + (reason || 'You are muted')) : '';
+        }
+    }
+
     function clearMessages() {
-        list.innerHTML = `
-            <div id="chat-empty" style="margin:auto;text-align:center;color:rgba(255,255,255,0.18);font-size:0.8rem;line-height:2;">
-                <div style="font-size:1.5rem;margin-bottom:0.5rem;">🏁</div>
-                No messages yet — be the first to say something!
-            </div>`;
+        list.innerHTML = `<div id="chat-empty" style="margin:auto;text-align:center;color:rgba(255,255,255,0.18);font-size:0.8rem;line-height:2;"><div style="font-size:1.5rem;margin-bottom:0.5rem;">🏁</div>No messages yet — be the first to say something!</div>`;
+    }
+
+    function appendSystem(text, warn = false) {
+        const el = document.createElement('div');
+        el.className = 'chat-system' + (warn ? ' warn' : '');
+        el.textContent = text;
+        list.appendChild(el);
+        list.scrollTop = list.scrollHeight;
     }
 
     function appendMessage({ username, message, teamColor, timestamp }, own = false) {
@@ -356,11 +454,26 @@ window.addEventListener('load', function () {
 
         const wrap = document.createElement('div');
         wrap.className = 'chat-msg' + (own ? ' own' : '');
+        wrap.dataset.username = username;
+
+        let adminHtml = '';
+        if (CHAT_CONFIG.isAdmin && !own) {
+            adminHtml = `
+                <button class="admin-trigger" title="Moderate" data-username="${escHtml(username)}">⚙</button>
+                <div class="admin-menu" data-username="${escHtml(username)}">
+                    <button data-action="timeout" data-seconds="300"  data-username="${escHtml(username)}">⏱ Timeout 5 min</button>
+                    <button data-action="timeout" data-seconds="1800" data-username="${escHtml(username)}">⏱ Timeout 30 min</button>
+                    <button data-action="timeout" data-seconds="3600" data-username="${escHtml(username)}">⏱ Timeout 1 hour</button>
+                    <button data-action="mute"    data-seconds=""     data-username="${escHtml(username)}">🔇 Permanent mute</button>
+                    <button data-action="unmute"  data-username="${escHtml(username)}" class="unmute-btn">✅ Unmute</button>
+                </div>`;
+        }
 
         wrap.innerHTML = `
             <div class="meta">
                 <span class="dot" style="background:${teamColor};box-shadow:0 0 6px ${teamColor}99;"></span>
                 <span class="uname" style="color:${teamColor};">${escHtml(username)}</span>
+                ${adminHtml}
                 <span class="ts">${escHtml(timestamp)}</span>
             </div>
             <div class="body">${escHtml(message)}</div>`;
@@ -369,55 +482,98 @@ window.addEventListener('load', function () {
         list.scrollTop = list.scrollHeight;
     }
 
-    function escHtml(str) {
-        return String(str)
-            .replace(/&/g,'&amp;').replace(/</g,'&lt;')
-            .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-    }
-
-    function nowTime() {
-        return new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-    }
-
-    // ── Switch race channel ───────────────────────────────────────
-    function switchRace(raceKey, raceName, sendUrl) {
-        // Leave previous channel
-        if (currentChannel) {
-            window.Echo.leave(`race-chat.${currentChannel}`);
+    // ── Admin menu toggle ─────────────────────────────────────
+    document.addEventListener('click', async (e) => {
+        // Toggle menu
+        const trigger = e.target.closest('.admin-trigger');
+        if (trigger) {
+            e.stopPropagation();
+            const menu = trigger.parentElement.querySelector('.admin-menu');
+            if (!menu) return;
+            if (openMenu && openMenu !== menu) openMenu.classList.remove('open');
+            menu.classList.toggle('open');
+            openMenu = menu.classList.contains('open') ? menu : null;
+            return;
         }
 
+        // Menu action
+        const btn = e.target.closest('.admin-menu button');
+        if (btn) {
+            e.stopPropagation();
+            const action   = btn.dataset.action;
+            const username = btn.dataset.username;
+            const seconds  = btn.dataset.seconds ? parseInt(btn.dataset.seconds) : null;
+
+            btn.closest('.admin-menu').classList.remove('open');
+            openMenu = null;
+
+            const url = action === 'unmute' ? CHAT_CONFIG.unmuteUrl : CHAT_CONFIG.muteUrl;
+            await fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': CHAT_CONFIG.csrfToken, 'X-Requested-With': 'XMLHttpRequest' },
+                body: JSON.stringify({ username, expires_in: action === 'unmute' ? null : seconds }),
+            });
+            return;
+        }
+
+        // Close menu on outside click
+        if (openMenu) { openMenu.classList.remove('open'); openMenu = null; }
+    });
+
+    // ── Switch race ───────────────────────────────────────────
+    function switchRace(raceKey, raceName, sendUrl) {
+        if (currentChannel) window.Echo.leave(`race-chat.${currentChannel}`);
         currentChannel = raceKey;
         currentSendUrl = sendUrl;
-
         if (panelName) panelName.textContent = raceName;
         clearMessages();
 
-        // Subscribe to new channel
         window.Echo.channel(`race-chat.${raceKey}`)
-            .listen('.message', (data) => {
-                appendMessage(data, false);
-            });
+            .listen('.message', (data) => appendMessage(data, false));
     }
 
-    // ── Send message ─────────────────────────────────────────────
+    // ── Moderation channel (all users listen) ─────────────────
+    window.Echo.channel('chat-moderation')
+        .listen('.moderation', (data) => {
+            if (data.action === 'muted') {
+                const label = data.expiresIn
+                    ? `${Math.round(data.expiresIn / 60)} min timeout`
+                    : 'permanent mute';
+                appendSystem(`${data.username} was given a ${label}.`, true);
+
+                // Lock input if it's the current user
+                if (CHAT_CONFIG.myId === data.userId) {
+                    setMuted(true, data.expiresIn
+                        ? `You are timed out for ${Math.round(data.expiresIn / 60)} min.`
+                        : 'You are permanently muted.');
+
+                    // Auto-unlock after timeout
+                    if (data.expiresIn) {
+                        setTimeout(() => setMuted(false), data.expiresIn * 1000);
+                    }
+                }
+            } else if (data.action === 'unmuted') {
+                appendSystem(`${data.username} was unmuted.`);
+                if (CHAT_CONFIG.myId === data.userId) setMuted(false);
+            }
+        });
+
+    // ── Send message ──────────────────────────────────────────
     async function sendMessage() {
-        if (!CHAT_CONFIG.loggedIn || !currentSendUrl) return;
+        if (!CHAT_CONFIG.loggedIn || !currentSendUrl || isMuted) return;
         const msg = input.value.trim();
         if (!msg) return;
 
         input.value = '';
         if (sendBtn) sendBtn.disabled = true;
 
-        // Optimistically render own message immediately
         appendMessage({
-            username:  CHAT_CONFIG.myName,
-            message:   msg,
-            teamColor: CHAT_CONFIG.myColor,
-            timestamp: nowTime(),
+            username: CHAT_CONFIG.myName, message: msg,
+            teamColor: CHAT_CONFIG.myColor, timestamp: nowTime(),
         }, true);
 
         try {
-            await fetch(currentSendUrl, {
+            const res = await fetch(currentSendUrl, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -427,6 +583,10 @@ window.addEventListener('load', function () {
                 },
                 body: JSON.stringify({ message: msg }),
             });
+            if (res.status === 403) {
+                const data = await res.json();
+                setMuted(true, data.message);
+            }
         } catch (err) {
             console.error('Chat send failed:', err);
         } finally {
@@ -435,27 +595,19 @@ window.addEventListener('load', function () {
         }
     }
 
-    // ── Event listeners ──────────────────────────────────────────
+    // ── Event listeners ───────────────────────────────────────
     selector?.addEventListener('change', () => {
         const opt = getSelectedOption();
-        if (!opt) return;
-        switchRace(opt.value, opt.dataset.name, opt.dataset.sendUrl);
+        if (opt) switchRace(opt.value, opt.dataset.name, opt.dataset.sendUrl);
     });
-
     sendBtn?.addEventListener('click', sendMessage);
-
     input?.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter' && !e.shiftKey) {
-            e.preventDefault();
-            sendMessage();
-        }
+        if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
     });
 
-    // ── Boot with default race ────────────────────────────────────
+    // ── Boot ──────────────────────────────────────────────────
     const opt = getSelectedOption();
-    if (opt) {
-        switchRace(opt.value, opt.dataset.name, opt.dataset.sendUrl);
-    }
+    if (opt) switchRace(opt.value, opt.dataset.name, opt.dataset.sendUrl);
 });
 </script>
 </x-app-layout>

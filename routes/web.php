@@ -37,6 +37,11 @@ Route::post('/races/{season}/{round}/chat', [\App\Http\Controllers\RaceChatContr
     ->name('races.chat.send');
 
 Route::middleware('auth')->group(function () {
+    Route::post('/chat/mute',   [\App\Http\Controllers\RaceChatController::class, 'mute'])->name('chat.mute');
+    Route::post('/chat/unmute', [\App\Http\Controllers\RaceChatController::class, 'unmute'])->name('chat.unmute');
+});
+
+Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
