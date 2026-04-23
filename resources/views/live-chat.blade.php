@@ -42,25 +42,6 @@
         50%       { opacity: 0.35; box-shadow: 0 0 3px rgba(225,6,0,0.3); }
     }
 
-    /* Race selector */
-    .race-select {
-        margin-left: auto;
-        background: rgba(255,255,255,0.05);
-        border: 1px solid rgba(255,255,255,0.12);
-        border-radius: 0.5rem;
-        color: white;
-        font-family: 'Audiowide', sans-serif;
-        font-size: 0.65rem;
-        letter-spacing: 1px;
-        padding: 0.5rem 0.85rem;
-        outline: none;
-        cursor: pointer;
-        transition: border-color 0.2s;
-        max-width: 240px;
-    }
-    .race-select:focus { border-color: rgba(225,6,0,0.6); }
-    .race-select option { background: #1a1a28; }
-
     /* ── Main content row — video left, chat right ── */
     .lc-content {
         flex: 1;
@@ -81,22 +62,19 @@
     /* ── Video placeholder ──────────────────── */
     .video-slot {
         flex: 1;
-        background: #0d0d14;
-        border: 1px dashed rgba(255,255,255,0.1);
+        background: #000;
         border-radius: 0.75rem;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        gap: 0.75rem;
-        color: rgba(255,255,255,0.2);
-        font-family: 'Audiowide', sans-serif;
-        font-size: 0.65rem;
-        letter-spacing: 2px;
-        text-transform: uppercase;
+        overflow: hidden;
         min-height: 0;
+        position: relative;
     }
-    .video-slot svg { width: 40px; height: 40px; opacity: 0.2; }
+    .video-slot iframe {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        border: none;
+    }
 
     /* ── Chat panel — fixed width right column ── */
     .lc-panel {
@@ -123,14 +101,6 @@
         letter-spacing: 1.5px;
         color: rgba(255,255,255,0.5);
     }
-    .lc-online {
-        margin-left: auto;
-        font-size: 0.6rem;
-        color: rgba(255,255,255,0.25);
-        font-family: 'Audiowide', sans-serif;
-        letter-spacing: 1px;
-    }
-
     /* Messages */
     #chat-messages {
         flex: 1;
@@ -324,16 +294,6 @@
             <span class="live-dot"></span>
             Live Race Chat
         </div>
-        <select id="race-selector" class="race-select" aria-label="Select race">
-            @foreach($races as $race)
-                <option value="{{ $race->season }}_{{ $race->round }}"
-                        data-name="{{ $race->name }}"
-                        data-send-url="{{ route('races.chat.send', [$race->season, $race->round]) }}"
-                        @selected($defaultRace && $race->id === $defaultRace->id)>
-                    Rd {{ $race->round }} — {{ $race->name }}
-                </option>
-            @endforeach
-        </select>
     </div>
 
     {{-- ── Main row: video left, chat right ── --}}
@@ -342,11 +302,14 @@
         {{-- Video side --}}
         <div class="lc-video-side">
             <div class="video-slot" id="video-slot">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2">
-                    <rect x="2" y="4" width="20" height="16" rx="2"/>
-                    <polygon points="10,8 16,12 10,16" fill="currentColor" stroke="none"/>
-                </svg>
-                <span>Video stream coming soon</span>
+                <iframe
+                    src="https://www.youtube.com/embed/mdnF9R-Bzpg?si=IhtXKKb73xCndG1D"
+                    title="YouTube video player"
+                    frameborder="0"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                    referrerpolicy="strict-origin-when-cross-origin"
+                    allowfullscreen>
+                </iframe>
             </div>
         </div>
 
@@ -355,9 +318,8 @@
         <div class="lc-panel-header">
             <span class="live-dot" style="width:7px;height:7px;"></span>
             <span class="lc-race-name" id="panel-race-name">
-                {{ $defaultRace ? $defaultRace->name : 'Select a race' }}
+                {{ $defaultRace ? $defaultRace->name : 'Race Chat' }}
             </span>
-            <span class="lc-online" id="online-count"></span>
         </div>
 
         <div id="chat-messages">
@@ -402,7 +364,6 @@ const CHAT_CONFIG = {
 };
 
 window.addEventListener('load', function () {
-    const selector  = document.getElementById('race-selector');
     const panelName = document.getElementById('panel-race-name');
     const list      = document.getElementById('chat-messages');
     const input     = document.getElementById('chat-input');
@@ -412,7 +373,7 @@ window.addEventListener('load', function () {
     let currentChannel = null;
     let currentSendUrl = null;
     let isMuted = false;
-    let openMenu = null; // currently open admin dropdown
+    let openMenu = null;
 
     // ── Helpers ──────────────────────────────────────────────
     const escHtml = str => String(str)
@@ -420,10 +381,6 @@ window.addEventListener('load', function () {
         .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 
     const nowTime = () => new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-
-    function getSelectedOption() {
-        return selector?.options[selector.selectedIndex] ?? null;
-    }
 
     function setMuted(muted, reason = '') {
         isMuted = muted;
@@ -596,18 +553,19 @@ window.addEventListener('load', function () {
     }
 
     // ── Event listeners ───────────────────────────────────────
-    selector?.addEventListener('change', () => {
-        const opt = getSelectedOption();
-        if (opt) switchRace(opt.value, opt.dataset.name, opt.dataset.sendUrl);
-    });
     sendBtn?.addEventListener('click', sendMessage);
     input?.addEventListener('keydown', (e) => {
         if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
     });
 
     // ── Boot ──────────────────────────────────────────────────
-    const opt = getSelectedOption();
-    if (opt) switchRace(opt.value, opt.dataset.name, opt.dataset.sendUrl);
+    @if($defaultRace)
+    switchRace(
+        @json($defaultRace->season . '_' . $defaultRace->round),
+        @json($defaultRace->name),
+        @json(route('races.chat.send', [$defaultRace->season, $defaultRace->round]))
+    );
+    @endif
 });
 </script>
 </x-app-layout>

@@ -266,10 +266,25 @@
                        class="nav-link {{ request()->routeIs('drivers.*') ? 'active' : '' }}">
                         {{ __('DRIVERS') }}
                     </a>
-                    <a href="{{ route('races.index') }}"
-                       class="nav-link {{ request()->routeIs('races.*') ? 'active' : '' }}">
-                        {{ __('RACES') }}
-                    </a>
+                    <div class="nav-dropdown-wrapper relative h-16 flex items-center"
+                         x-data="{ open: false }"
+                         @mouseenter="open = true"
+                         @mouseleave="open = false">
+                        <button type="button"
+                                class="nav-dropdown-trigger {{ request()->routeIs('races.*') || request()->routeIs('live-chat') ? 'active' : '' }}">
+                            {{ __('RACES') }}
+                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
+                                      d="M19 9l-7 7-7-7"/>
+                            </svg>
+                        </button>
+
+                        <div x-show="open" x-transition
+                             class="nav-dropdown absolute top-full left-0 z-50">
+                            <a href="{{ route('races.index') }}">Race Calendar</a>
+                            <a href="{{ route('live-chat') }}">Watch Live</a>
+                        </div>
+                    </div>
 
                     <div class="nav-dropdown-wrapper relative h-16 flex items-center"
                          x-data="{ open: false }"
@@ -361,7 +376,9 @@
             <a href="{{ route('drivers.index') }}"
                class="mobile-link {{ request()->routeIs('drivers.*') ? 'active' : '' }}">{{ __('DRIVERS') }}</a>
             <a href="{{ route('races.index') }}"
-               class="mobile-link {{ request()->routeIs('races.*') ? 'active' : '' }}">{{ __('RACES') }}</a>
+               class="mobile-link {{ request()->routeIs('races.*') ? 'active' : '' }}">{{ __('RACE CALENDAR') }}</a>
+            <a href="{{ route('live-chat') }}"
+               class="mobile-link {{ request()->routeIs('live-chat') ? 'active' : '' }}">{{ __('WATCH LIVE') }}</a>
             <a href="{{ route('standings.index') }}"
                class="mobile-link {{ request()->routeIs('standings.index') ? 'active' : '' }}">{{ __('DRIVER STANDINGS') }}</a>
             <a href="{{ route('standings.constructors', ['season' => now()->year]) }}"
