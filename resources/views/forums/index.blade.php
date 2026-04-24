@@ -353,6 +353,35 @@
 
     {{-- ── Pagination ── --}}
     @if($races->hasPages())
+    @php
+        $cur  = $races->currentPage();
+        $last = $races->lastPage();
+        $urls = $races->getUrlRange(1, $last);
+
+        // Window: current page + up to 5 forward, anchored so we always show ~6 pages
+        $winStart = max(1, min($cur, $last - 5));
+        $winEnd   = min($last, $winStart + 5);
+
+        // Build page list with ellipsis markers (null = ellipsis)
+        $pages = [];
+
+        // Always include page 1
+        if ($winStart > 1) {
+            $pages[] = 1;
+            if ($winStart > 2) $pages[] = null; // ellipsis
+        }
+
+        // Window pages
+        for ($p = $winStart; $p <= $winEnd; $p++) {
+            $pages[] = $p;
+        }
+
+        // Always include last page
+        if ($winEnd < $last) {
+            if ($winEnd < $last - 1) $pages[] = null; // ellipsis
+            $pages[] = $last;
+        }
+    @endphp
     <div class="f1-pagination pb-20 reveal">
         {{-- Previous --}}
         @if($races->onFirstPage())
@@ -362,11 +391,13 @@
         @endif
 
         {{-- Page numbers --}}
-        @foreach($races->getUrlRange(1, $races->lastPage()) as $page => $url)
-            @if($page == $races->currentPage())
+        @foreach($pages as $page)
+            @if(is_null($page))
+                <span style="color:rgba(255,255,255,0.25);padding:0 0.25rem;">…</span>
+            @elseif($page == $cur)
                 <span class="active">{{ $page }}</span>
             @else
-                <a href="{{ $url }}">{{ $page }}</a>
+                <a href="{{ $urls[$page] }}">{{ $page }}</a>
             @endif
         @endforeach
 
