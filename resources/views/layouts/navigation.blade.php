@@ -243,6 +243,7 @@
         color: white;
         border-left-color: #e10600;
     }
+
 </style>
 
 <nav x-data="{ open: false }" class="f1-nav audiowide-regular">
@@ -263,6 +264,7 @@
                         {{ __('HOME') }}
                     </a>
                     <a href="{{ route('drivers.index') }}"
+                       id="drivers-nav-link"
                        class="nav-link {{ request()->routeIs('drivers.*') ? 'active' : '' }}">
                         {{ __('DRIVERS') }}
                     </a>

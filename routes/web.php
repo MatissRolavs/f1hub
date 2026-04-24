@@ -15,6 +15,7 @@ Route::get('/dashboard', [HomeController::class, 'index'])->name('dashboard');
 
 Route::get('/drivers', [DriverController::class, 'index'])->name('drivers.index');
 Route::get('/drivers/sync', [DriverController::class, 'syncStandings'])->name('drivers.sync');
+Route::get('/drivers/search', [DriverController::class, 'search'])->name('drivers.search');
 Route::get('/drivers/{driver}', [DriverController::class, 'showDriver'])->name('drivers.show');
 Route::get('/standings', [DriverController::class, 'showStandings'])->name('standings.index');
 Route::get('/drivers/{driver}/compare', [DriverController::class, 'compareDrivers'])->name('drivers.compare');

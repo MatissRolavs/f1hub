@@ -4,7 +4,7 @@
     $teamColor       = config('f1.team_colors.' . $constructorName, config('f1.default_team_color'));
     $flagCode        = config('f1.nationality_flags.' . $driver->nationality, config('f1.default_flag_code'));
     $flagUrl         = "https://flagcdn.com/w40/" . $flagCode . ".png";
-    $position        = $driver->latestStanding->position ?? null;
+    $position        = $seasonStats['position'] ?? null;
     $rankClass       = match(true) {
         $position === 1 => 'bg-gradient-to-br from-yellow-300 to-yellow-600 text-black',
         $position === 2 => 'bg-gradient-to-br from-gray-200 to-gray-500 text-black',
@@ -198,7 +198,7 @@
             {{-- Current Season --}}
             <div class="stat-card p-6 reveal">
                 <h3 class="section-title audiowide-regular text-xl font-bold uppercase text-white mb-6">
-                    {{ date('Y') }} Season
+                    {{ $seasonStats['season'] }} Season
                 </h3>
                 <div>
                     <div class="stat-row">

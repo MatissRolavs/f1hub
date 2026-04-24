@@ -19,6 +19,42 @@ class DriverController extends Controller
     {
         $this->f1Service = $f1Service;
     }
+    public function search(Request $request)
+    {
+        $q = trim($request->get('q', ''));
+        if (strlen($q) < 2) return response()->json([]);
+
+        $drivers = Driver::with(['standings' => function ($query) {
+                $query->orderByDesc('season')->orderByDesc('round')->limit(1);
+            }, 'standings.constructor'])
+            ->where(function ($query) use ($q) {
+                $query->where('given_name', 'like', "%{$q}%")
+                      ->orWhere('family_name', 'like', "%{$q}%")
+                      ->orWhere('code', 'like', "%{$q}%")
+                      ->orWhereRaw("CONCAT(given_name, ' ', family_name) LIKE ?", ["%{$q}%"]);
+            })
+            ->limit(6)
+            ->get();
+
+        return response()->json($drivers->map(function ($d) {
+            $standing   = $d->standings->first();
+            $constructor = $standing?->constructor;
+            $color = $constructor
+                ? config('f1.team_colors.' . $constructor->name, '#e10600')
+                : '#e10600';
+
+            return [
+                'name'        => $d->given_name . ' ' . $d->family_name,
+                'code'        => $d->code,
+                'number'      => $d->permanent_number,
+                'nationality' => $d->nationality,
+                'team'        => $constructor?->name,
+                'color'       => $color,
+                'url'         => route('drivers.show', $d),
+            ];
+        }));
+    }
+
     public function syncStandings($year = 2025)
     {
         if (Auth::user()->role !== 'admin') abort(403, 'Unauthorized');
@@ -270,8 +306,20 @@ class DriverController extends Controller
 
         $currentSeason = now()->year;
 
-        // Use API first, DB second for current season stats
+        // Try current season first
         $seasonStats = $this->getDriverSeasonStats($driver, $currentSeason);
+
+        // If driver has no data for current season, fall back to their latest season in DB
+        if (empty($seasonStats['position']) && empty($seasonStats['points'])) {
+            $latestStanding = Standing::where('driver_id', $driver->id)
+                ->orderByDesc('season')
+                ->orderByDesc('round')
+                ->first();
+
+            if ($latestStanding && $latestStanding->season != $currentSeason) {
+                $seasonStats = $this->getDriverSeasonStats($driver, (int) $latestStanding->season);
+            }
+        }
 
         // Career stats (all-time)
         $careerStats = Cache::remember("driver:{$driver->driver_id}:career", now()->addHours(6), function () use ($driver) {
