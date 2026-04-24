@@ -70,6 +70,12 @@ Route::middleware('auth')->group(function () {
     Route::put('/admin/races/{race}', [AdminController::class, 'update'])->name('admin.races.update');
     Route::get('/admin/panel', [AdminController::class, 'panel'])->name('admin.panel');
     Route::get('/admin/data', [AdminController::class, 'data'])->name('admin.data');
+
+    // User management
+    Route::get('/admin/users', [AdminController::class, 'users'])->name('admin.users.index');
+    Route::patch('/admin/users/{user}/role', [AdminController::class, 'updateUserRole'])->name('admin.users.role');
+    Route::patch('/admin/users/{user}/password', [AdminController::class, 'resetUserPassword'])->name('admin.users.password');
+    Route::delete('/admin/users/{user}', [AdminController::class, 'deleteUser'])->name('admin.users.delete');
 });
 
 require __DIR__.'/auth.php';
