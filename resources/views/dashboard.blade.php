@@ -237,7 +237,7 @@
         <div class="stat-item reveal"><div class="stat-number">75+</div><div class="stat-desc">Years of Race Data</div></div>
         <div class="stat-item reveal"><div class="stat-number">22</div><div class="stat-desc">Current Drivers</div></div>
         <div class="stat-item reveal"><div class="stat-number">24</div><div class="stat-desc">Races This Season</div></div>
-        <div class="stat-item reveal"><div class="stat-number">11</div><div class="stat-desc">Constructor Teams</div></div>
+        <div class="stat-item reveal"><div class="stat-number">11</div><div class="stat-desc">Current Constructor Teams</div></div>
     </div>
 </div>
 

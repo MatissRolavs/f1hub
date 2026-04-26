@@ -253,9 +253,9 @@
             {{-- Left: Logo + Links --}}
             <div class="flex items-center">
                 <a href="{{ route('dashboard') }}" class="flex items-center gap-2 shrink-0">
-                    <img src="https://copilot.microsoft.com/th/id/BCO.1853a237-4c9c-4232-84b3-e8ae2bb8df46.png"
+                    <img src="{{ asset('images/f1logo.png') }}"
                          alt="F1 Logo"
-                         class="nav-logo w-11 h-11 object-contain">
+                         class="nav-logo h-8 w-auto object-contain">
                 </a>
 
                 <div class="hidden sm:flex items-center gap-6 lg:gap-8 sm:ml-10 h-16">
