@@ -288,7 +288,7 @@
                         <div x-show="open" x-transition
                              class="nav-dropdown absolute top-full left-0 z-50">
                             <a href="{{ route('races.index') }}">Race Calendar</a>
-                            <a href="{{ route('live-chat') }}">Watch Live</a>
+                            <a href="{{ route('live-chat') }}">Chat Live</a>
                         </div>
                     </div>
 

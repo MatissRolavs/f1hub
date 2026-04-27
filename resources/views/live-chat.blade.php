@@ -59,26 +59,77 @@
         gap: 0;
     }
 
-    /* ── Video placeholder ──────────────────── */
+    /* ── Mobile: hide placeholder, chat goes full width ── */
+    @media (max-width: 639px) {
+        .lc-video-side { display: none; }
+        .lc-panel {
+            width: 100%;
+            flex: 1;
+        }
+    }
+
+    /* ── Video / coming-soon slot ───────────── */
     .video-slot {
         flex: 1;
-        background: #000;
         border-radius: 0.75rem;
         overflow: hidden;
         min-height: 0;
         position: relative;
+        background: linear-gradient(135deg, #0f0f17 0%, #1a1a28 100%);
+        border: 1px solid rgba(255,255,255,0.07);
+        display: flex;
+        align-items: center;
+        justify-content: center;
     }
-    .video-slot iframe {
-        position: absolute;
-        inset: 0;
-        width: 100%;
-        height: 100%;
-        border: none;
+    .coming-soon-inner {
+        text-align: center;
+        padding: 2rem;
+        user-select: none;
+    }
+    .coming-soon-icon {
+        font-size: 3.5rem;
+        margin-bottom: 1.25rem;
+        line-height: 1;
+        filter: drop-shadow(0 0 18px rgba(225,6,0,0.55));
+        animation: iconpulse 3s ease-in-out infinite;
+    }
+    @keyframes iconpulse {
+        0%, 100% { transform: scale(1); filter: drop-shadow(0 0 18px rgba(225,6,0,0.55)); }
+        50%       { transform: scale(1.06); filter: drop-shadow(0 0 30px rgba(225,6,0,0.9)); }
+    }
+    .coming-soon-title {
+        font-family: 'Audiowide', sans-serif;
+        font-size: 1.05rem;
+        letter-spacing: 4px;
+        text-transform: uppercase;
+        color: white;
+        margin-bottom: 0.6rem;
+    }
+    .coming-soon-sub {
+        font-size: 0.78rem;
+        letter-spacing: 1.5px;
+        color: rgba(255,255,255,0.35);
+        line-height: 1.7;
+    }
+    .coming-soon-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        margin-top: 1.5rem;
+        padding: 0.4rem 1rem;
+        border-radius: 9999px;
+        border: 1px solid rgba(225,6,0,0.4);
+        background: rgba(225,6,0,0.08);
+        font-family: 'Audiowide', sans-serif;
+        font-size: 0.6rem;
+        letter-spacing: 2px;
+        color: #fca5a5;
+        text-transform: uppercase;
     }
 
     /* ── Chat panel — fixed width right column ── */
     .lc-panel {
-        width: 340px;
+        width: 420px;
         flex-shrink: 0;
         display: flex;
         flex-direction: column;
@@ -299,17 +350,20 @@
     {{-- ── Main row: video left, chat right ── --}}
     <div class="lc-content">
 
-        {{-- Video side --}}
+        {{-- Coming soon side --}}
         <div class="lc-video-side">
             <div class="video-slot" id="video-slot">
-                <iframe
-                    src="https://www.youtube.com/embed/mdnF9R-Bzpg?si=IhtXKKb73xCndG1D"
-                    title="YouTube video player"
-                    frameborder="0"
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                    referrerpolicy="strict-origin-when-cross-origin"
-                    allowfullscreen>
-                </iframe>
+                <div class="coming-soon-inner">
+                    <div class="coming-soon-icon">📡</div>
+                    <p class="coming-soon-title">Live Streaming</p>
+                    <p class="coming-soon-sub">
+                        Live race broadcast will be<br>available here during race weekends.
+                    </p>
+                    <span class="coming-soon-badge">
+                        <span class="live-dot" style="width:6px;height:6px;"></span>
+                        Coming Soon
+                    </span>
+                </div>
             </div>
         </div>
 
