@@ -318,18 +318,46 @@
         <h3 class="audiowide-regular text-2xl font-bold mb-1 text-white">Create a New Post</h3>
         <p class="text-sm text-white/50 mb-6">{{ $race->name }} — {{ $race->season }}</p>
 
-        <form action="{{ route('forums.store', $race->id) }}" method="POST">
+        <form action="{{ route('forums.store', $race->id) }}" method="POST" id="create-post-form">
             @csrf
+
+            {{-- Title --}}
             <div class="mb-4">
-                <label class="block mb-2 text-xs uppercase tracking-widest text-white/60">Title</label>
-                <input type="text" name="title" class="filter-input" required>
+                <div class="flex items-center justify-between mb-2">
+                    <label class="text-xs uppercase tracking-widest text-white/60">Title</label>
+                    <span class="text-xs text-white/30"><span id="title-count">0</span>&nbsp;/&nbsp;150</span>
+                </div>
+                <input type="text" name="title" id="post-title" maxlength="150"
+                       value="{{ old('title') }}"
+                       placeholder="Give your post a clear title…"
+                       class="filter-input w-full {{ $errors->has('title') ? 'border-red-500' : '' }}">
+                <div class="flex items-center justify-between mt-1">
+                    @error('title')
+                        <p class="text-red-400 text-xs">{{ $message }}</p>
+                    @else
+                        <p class="text-white/25 text-xs">Min 5 · Max 150 characters</p>
+                    @enderror
+                </div>
             </div>
+
+            {{-- Body --}}
             <div class="mb-6">
-                <label class="block mb-2 text-xs uppercase tracking-widest text-white/60">Body</label>
-                <textarea name="body" rows="5"
-                          class="w-full p-3 rounded-lg bg-white/5 border border-white/15 text-white focus:outline-none focus:border-red-500 focus:shadow-[0_0_15px_rgba(225,6,0,0.35)] transition"
-                          required></textarea>
+                <div class="flex items-center justify-between mb-2">
+                    <label class="text-xs uppercase tracking-widest text-white/60">Body</label>
+                    <span class="text-xs text-white/30"><span id="body-count">0</span>&nbsp;/&nbsp;5000</span>
+                </div>
+                <textarea name="body" id="post-body" rows="5" maxlength="5000"
+                          placeholder="Share your thoughts about the race…"
+                          class="w-full p-3 rounded-lg bg-white/5 border text-white focus:outline-none focus:border-red-500 focus:shadow-[0_0_15px_rgba(225,6,0,0.35)] transition {{ $errors->has('body') ? 'border-red-500' : 'border-white/15' }}">{{ old('body') }}</textarea>
+                <div class="flex items-center justify-between mt-1">
+                    @error('body')
+                        <p class="text-red-400 text-xs">{{ $message }}</p>
+                    @else
+                        <p class="text-white/25 text-xs">Min 20 · Max 5000 characters</p>
+                    @enderror
+                </div>
             </div>
+
             <div class="flex justify-end gap-3">
                 <button type="button" id="closeModalBtnFooter" class="btn-ghost">Cancel</button>
                 <button type="submit" class="btn-f1">Post</button>
@@ -365,6 +393,34 @@
 
     modal.addEventListener('click', (e) => { if (e.target === modal) close(); });
     document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && !modal.classList.contains('hidden')) close(); });
+
+    // Auto-open modal if validation errors exist (redirect back with errors)
+    @if($errors->has('title') || $errors->has('body'))
+        open();
+    @endif
+
+    // Live character counters
+    const titleInput = document.getElementById('post-title');
+    const bodyInput  = document.getElementById('post-body');
+    const titleCount = document.getElementById('title-count');
+    const bodyCount  = document.getElementById('body-count');
+
+    function updateCounter(input, counter, min, max) {
+        const len = input.value.length;
+        counter.textContent = len;
+        if (len < min || len > max) {
+            counter.style.color = '#f87171';
+        } else {
+            counter.style.color = 'rgba(255,255,255,0.5)';
+        }
+    }
+
+    titleInput?.addEventListener('input', () => updateCounter(titleInput, titleCount, 5, 150));
+    bodyInput?.addEventListener('input',  () => updateCounter(bodyInput,  bodyCount,  20, 5000));
+
+    // Init counters with any pre-filled values (old input)
+    if (titleInput && titleCount) updateCounter(titleInput, titleCount, 5, 150);
+    if (bodyInput  && bodyCount)  updateCounter(bodyInput,  bodyCount,  20, 5000);
 })();
 
 // Scroll reveal

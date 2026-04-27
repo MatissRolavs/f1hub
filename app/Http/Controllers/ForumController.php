@@ -113,8 +113,13 @@ public function show($raceId, Request $request)
         $race = Race::findOrFail($raceId);
 
         $validated = $request->validate([
-            'title' => 'required|string|max:255',
-            'body'  => 'required|string',
+            'title' => 'required|string|min:5|max:150',
+            'body'  => 'required|string|min:20|max:5000',
+        ], [
+            'title.min' => 'Title must be at least 5 characters.',
+            'title.max' => 'Title cannot exceed 150 characters.',
+            'body.min'  => 'Post body must be at least 20 characters.',
+            'body.max'  => 'Post body cannot exceed 5000 characters.',
         ]);
 
         ForumPost::create([
@@ -141,7 +146,10 @@ public function show($raceId, Request $request)
 public function storeComment(Request $request, $postId)
 {
     $request->validate([
-        'body' => 'required|string'
+        'body' => 'required|string|min:3|max:1000',
+    ], [
+        'body.min' => 'Comment must be at least 3 characters.',
+        'body.max' => 'Comment cannot exceed 1000 characters.',
     ]);
 
     Comment::create([

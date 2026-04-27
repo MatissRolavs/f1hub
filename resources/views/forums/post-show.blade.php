@@ -278,14 +278,20 @@
     @auth
         <form action="{{ route('posts.comment', $post->id) }}" method="POST" class="mb-8 reveal">
             @csrf
-            <label class="block mb-2 text-xs uppercase tracking-widest text-white/60">Write a comment</label>
-            <textarea name="body" rows="3"
-                      class="comment-textarea"
-                      placeholder="Share your thoughts..." required></textarea>
-            <div class="flex justify-end mt-3">
-                <button type="submit" class="btn-f1">
-                    Add Comment
-                </button>
+            <div class="flex items-center justify-between mb-2">
+                <label class="text-xs uppercase tracking-widest text-white/60">Write a comment</label>
+                <span class="text-xs text-white/30"><span id="comment-count">0</span>&nbsp;/&nbsp;1000</span>
+            </div>
+            <textarea name="body" id="comment-body" rows="3" maxlength="1000"
+                      class="comment-textarea {{ $errors->has('body') ? 'border-red-500' : '' }}"
+                      placeholder="Share your thoughts...">{{ old('body') }}</textarea>
+            <div class="flex items-center justify-between mt-2">
+                @error('body')
+                    <p class="text-red-400 text-xs">{{ $message }}</p>
+                @else
+                    <p class="text-white/25 text-xs">Min 3 · Max 1000 characters</p>
+                @enderror
+                <button type="submit" class="btn-f1 ml-auto">Add Comment</button>
             </div>
         </form>
     @else
@@ -360,6 +366,21 @@
         el.querySelector('.local-month').textContent = d.toLocaleString([], { month: 'short' });
         el.querySelector('.local-year').textContent  = d.getFullYear();
     });
+})();
+
+// ── Comment character counter ─────────────────────────────
+(function () {
+    const body    = document.getElementById('comment-body');
+    const counter = document.getElementById('comment-count');
+    if (!body || !counter) return;
+
+    function update() {
+        const len = body.value.length;
+        counter.textContent = len;
+        counter.style.color = (len < 3 || len > 1000) ? '#f87171' : 'rgba(255,255,255,0.5)';
+    }
+    body.addEventListener('input', update);
+    update();
 })();
 
 // ── Scroll reveal ─────────────────────────────────────────
