@@ -83,11 +83,15 @@
         background: rgba(255,255,255,0.05);
         border: 1px solid rgba(255,255,255,0.15);
         color: white;
-        padding: 0.65rem 1rem;
+        padding-top: 0.65rem;
+        padding-bottom: 0.65rem;
+        padding-right: 1rem;
+        /* padding-left intentionally omitted — set via pl-10 on element */
         border-radius: 9999px;
         transition: border-color 0.25s ease, box-shadow 0.25s ease;
         width: 100%;
     }
+    .filter-select { padding-left: 1rem; }
     .filter-input::placeholder { color: rgba(255,255,255,0.4); }
     .filter-input:focus,
     .filter-select:focus {
