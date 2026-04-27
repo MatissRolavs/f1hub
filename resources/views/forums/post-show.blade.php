@@ -221,10 +221,10 @@
 
             <div class="flex items-start gap-5">
                 {{-- Date block --}}
-                <div class="date-block">
-                    <span class="d">{{ $post->created_at->format('d') }}</span>
-                    <span class="m">{{ $post->created_at->format('M') }}</span>
-                    <span class="y">{{ $post->created_at->format('Y') }}</span>
+                <div class="date-block" data-utc="{{ $post->created_at->toIso8601String() }}">
+                    <span class="d local-day">{{ $post->created_at->format('d') }}</span>
+                    <span class="m local-month">{{ $post->created_at->format('M') }}</span>
+                    <span class="y local-year">{{ $post->created_at->format('Y') }}</span>
                 </div>
 
                 <div class="flex-1 min-w-0">
@@ -234,9 +234,9 @@
                     <p class="text-sm text-white/60 audiowide-regular">
                         by <x-user-badge :user="$post->user" class="font-semibold text-white/90" />
                         <span class="mx-1">•</span>
-                        {{ $post->created_at->format('H:i') }}
+                        <time class="local-hm" data-utc="{{ $post->created_at->toIso8601String() }}">{{ $post->created_at->format('H:i') }}</time>
                         <span class="mx-1">•</span>
-                        {{ $post->created_at->diffForHumans() }}
+                        <time class="local-rel" data-utc="{{ $post->created_at->toIso8601String() }}">{{ $post->created_at->diffForHumans() }}</time>
                     </p>
                 </div>
             </div>
@@ -305,7 +305,7 @@
                         <x-user-badge :user="$comment->user" class="font-semibold text-white" />
                     </p>
                     <p class="text-xs text-white/50 tracking-widest uppercase">
-                        {{ $comment->created_at->diffForHumans() }}
+                        <time class="local-rel" data-utc="{{ $comment->created_at->toIso8601String() }}">{{ $comment->created_at->diffForHumans() }}</time>
                     </p>
                 </div>
                 <p class="text-white/90 break-words whitespace-pre-line leading-relaxed">{{ $comment->body }}</p>
@@ -327,6 +327,42 @@
 </div>
 
 <script>
+// ── Local timezone timestamps ─────────────────────────────
+(function () {
+    function relTime(d) {
+        const diff = Date.now() - d.getTime();
+        const s  = Math.floor(diff / 1000);
+        const m  = Math.floor(s  / 60);
+        const h  = Math.floor(m  / 60);
+        const dy = Math.floor(h  / 24);
+        if (s  <  60) return 'just now';
+        if (m  <  60) return m  + ' minute'  + (m  > 1 ? 's' : '') + ' ago';
+        if (h  <  24) return h  + ' hour'    + (h  > 1 ? 's' : '') + ' ago';
+        if (dy <  30) return dy + ' day'     + (dy > 1 ? 's' : '') + ' ago';
+        return d.toLocaleDateString([], { day: 'numeric', month: 'short', year: 'numeric' });
+    }
+
+    // H:mm times
+    document.querySelectorAll('time.local-hm[data-utc]').forEach(el => {
+        const d = new Date(el.dataset.utc);
+        el.textContent = d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    });
+
+    // Relative "X ago" times
+    document.querySelectorAll('time.local-rel[data-utc]').forEach(el => {
+        el.textContent = relTime(new Date(el.dataset.utc));
+    });
+
+    // Date block (day / month / year)
+    document.querySelectorAll('.date-block[data-utc]').forEach(el => {
+        const d = new Date(el.dataset.utc);
+        el.querySelector('.local-day').textContent   = String(d.getDate()).padStart(2, '0');
+        el.querySelector('.local-month').textContent = d.toLocaleString([], { month: 'short' });
+        el.querySelector('.local-year').textContent  = d.getFullYear();
+    });
+})();
+
+// ── Scroll reveal ─────────────────────────────────────────
 (function(){
     const targets = document.querySelectorAll('.reveal, .reveal-scale');
     if (!('IntersectionObserver' in window) || !targets.length) {
