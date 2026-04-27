@@ -130,7 +130,6 @@ class RaceController extends Controller
             'https://t3.ftcdn.net/jpg/13/22/58/86/360_F_1322588670_REIoCPfaSiVcN7ZibFuYeZIfdVQVBEZL.jpg',
             'https://www.topgear.com/sites/default/files/news-listicle/image/2022/06/0-Best-F1-tracks.jpg',
             'https://static.independent.co.uk/s3fs-public/thumbnails/image/2018/05/18/12/formula-1.jpg?width=1200&height=630&fit=crop',
-            'https://cdn.racingnews365.com/_1800x945_crop_center-center_75_none/E_BeHUFX0AA0QLs.jpeg?v=1673948090',
         ];
 
         $prepare = function ($race, $label) use ($f1Images) {

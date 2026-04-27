@@ -259,7 +259,7 @@
         </aside>
 
         {{-- ───────────────────────── POSTS ───────────────────────── --}}
-        <main class="flex-1">
+        <main class="flex-1 min-w-0">
             <h3 class="section-title text-xl md:text-2xl font-bold uppercase mb-6 reveal">
                 Discussion
             </h3>
@@ -269,7 +269,7 @@
                     <div onclick="window.location.href='{{ route('posts.show', $post->id) }}'"
                          class="post-row reveal">
                         <div class="flex items-center justify-between gap-4">
-                            <div class="flex-1 min-w-0">
+                            <div class="flex-1 min-w-0 overflow-hidden">
                                 <h4 class="text-base md:text-lg font-bold text-white truncate">{{ $post->title }}</h4>
                                 <p class="text-xs text-white/50 mt-1">
                                     by <x-user-badge :user="$post->user" class="font-semibold text-white/80" /> • {{ $post->created_at->diffForHumans() }}
