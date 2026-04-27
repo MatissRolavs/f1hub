@@ -52,10 +52,11 @@
         position: relative;
         display: inline-flex;
         align-items: center;
+        white-space: nowrap;
         padding: 0.5rem 0.25rem;
-        font-size: 0.8rem;
+        font-size: 0.75rem;
         font-weight: 600;
-        letter-spacing: 2px;
+        letter-spacing: 1.5px;
         color: rgba(255,255,255,0.7);
         transition: color 0.25s ease;
     }
@@ -80,11 +81,12 @@
         position: relative;
         display: inline-flex;
         align-items: center;
+        white-space: nowrap;
         gap: 0.35rem;
         padding: 0.5rem 0.25rem;
-        font-size: 0.8rem;
+        font-size: 0.75rem;
         font-weight: 600;
-        letter-spacing: 2px;
+        letter-spacing: 1.5px;
         color: rgba(255,255,255,0.7);
         transition: color 0.25s ease;
         background: transparent;
@@ -136,14 +138,15 @@
         position: relative;
         display: inline-flex;
         align-items: center;
-        gap: 0.5rem;
-        padding: 0.5rem 0.9rem;
+        gap: 0.4rem;
+        padding: 0.4rem 0.75rem;
         border-radius: 9999px;
         background: rgba(255,255,255,0.04);
         border: 1px solid rgba(255,255,255,0.15);
-        font-size: 0.75rem;
+        font-size: 0.7rem;
         font-weight: 600;
         letter-spacing: 1px;
+        white-space: nowrap;
         color: rgba(255,255,255,0.9);
         transition: border-color 0.25s ease, background 0.25s ease, box-shadow 0.25s ease;
     }
@@ -160,14 +163,15 @@
         display: inline-flex;
         align-items: center;
         gap: 0.4rem;
-        padding: 0.5rem 1rem;
+        padding: 0.4rem 0.85rem;
         border-radius: 9999px;
         background: transparent;
         border: 1px solid rgba(225,6,0,0.5);
         color: #fca5a5;
-        font-size: 0.75rem;
+        font-size: 0.7rem;
         font-weight: 700;
         letter-spacing: 1.5px;
+        white-space: nowrap;
         transition: background 0.25s ease, color 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
     }
     .logout-btn:hover {
@@ -258,7 +262,7 @@
                          class="nav-logo h-8 w-auto object-contain">
                 </a>
 
-                <div class="hidden sm:flex items-center gap-6 lg:gap-8 sm:ml-10 h-16">
+                <div class="hidden sm:flex items-center gap-4 lg:gap-6 sm:ml-6 lg:ml-10 h-16">
                     <a href="{{ route('dashboard') }}"
                        class="nav-link {{ request()->routeIs('dashboard') ? 'active' : '' }}">
                         {{ __('HOME') }}
@@ -332,7 +336,7 @@
             </div>
 
             {{-- Right: Auth actions --}}
-            <div class="hidden sm:flex sm:items-center gap-3">
+            <div class="hidden sm:flex sm:items-center gap-3 shrink-0 ml-4">
                 @auth
                     <a href="{{ route('profile.edit') }}"
                        class="user-chip {{ request()->routeIs('profile.edit') ? 'active' : '' }}">
